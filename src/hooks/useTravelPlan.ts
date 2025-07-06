@@ -138,11 +138,13 @@ export const useTravelPlan = () => {
     });
   }, []);
 
-  const updateGrassPointComment = useCallback((pointId: string, comment: string) => {
+  const updateGrassPointComment = useCallback((pointId: string, commentObj: { text: string; user?: string; time?: string }) => {
     setState(prev => {
       if (!prev.currentPlan) return prev;
       const updatedPoints = prev.currentPlan.grassPoints.map(point =>
-        point.id === pointId ? { ...point, comment } : point
+        point.id === pointId
+          ? { ...point, comments: [...(point.comments || []), commentObj] }
+          : point
       );
       return {
         ...prev,

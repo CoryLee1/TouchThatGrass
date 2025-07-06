@@ -25,7 +25,7 @@ interface RouteListPanelProps {
   onTimeChange?: (pointId: string, newTime: string) => void;
   onStatusChange?: (pointId: string, status: 'liked' | 'disliked' | 'none') => void;
   onPhoto?: (pointId: string, photoUrl: string) => void;
-  onCommentChange?: (pointId: string, comment: string) => void;
+  onCommentChange?: (pointId: string, comment: { text: string; time: string }) => void;
 }
 
 function SortableItem({ point, index, onToggleComplete, onTimeChange, editingId, setEditingId, editTime, setEditTime, onStatusChange, onPhoto, onCommentChange }: {
@@ -39,7 +39,7 @@ function SortableItem({ point, index, onToggleComplete, onTimeChange, editingId,
   setEditTime: (time: string) => void;
   onStatusChange?: (pointId: string, status: 'liked' | 'disliked' | 'none') => void;
   onPhoto?: (pointId: string, photoUrl: string) => void;
-  onCommentChange?: (pointId: string, comment: string) => void;
+  onCommentChange?: (pointId: string, comment: { text: string; time: string }) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: point.id });
   const style = {
@@ -49,7 +49,7 @@ function SortableItem({ point, index, onToggleComplete, onTimeChange, editingId,
   };
   const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
   const [showComment, setShowComment] = useState(false);
-  const [commentDraft, setCommentDraft] = useState(point.comment || '');
+  const [commentDraft, setCommentDraft] = useState('');
   const [showCamera, setShowCamera] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(point.photoUrl || '');
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -194,16 +194,20 @@ function SortableItem({ point, index, onToggleComplete, onTimeChange, editingId,
               <div className="text-right">
                 <button
                   className="text-xs text-blue-500 mt-1"
-                  onClick={() => { onCommentChange?.(point.id, commentDraft); setCommentDraft(''); setShowComment(false); }}
+                  onClick={() => { onCommentChange?.(point.id, { text: commentDraft, time: new Date().toISOString() }); setCommentDraft(''); setShowComment(false); }}
                 >发送</button>
               </div>
             </div>
           )}
           {/* 评论内容气泡显示 */}
-          {point.comment && (
-            <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700 border flex items-start gap-2">
-              <span style={{ fontSize: '1.1em' }}>💬</span>
-              <span>{point.comment}</span>
+          {Array.isArray(point.comments) && point.comments.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {point.comments.map((c, i) => (
+                <div key={i} className="p-2 bg-gray-50 rounded text-xs text-gray-700 border flex items-start gap-2">
+                  <span style={{ fontSize: '1.1em' }}>💬</span>
+                  <span>{c.text}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -124,7 +124,7 @@ export default function GrassMap() {
           markersRef.current.forEach(m => m.remove());
           markersRef.current = [];
           pointsWithCoords.forEach((point, index) => {
-            console.log('marker', point.name, 'comment:', point.comment);
+            console.log('marker', point.name, 'comment:', point.comments);
             const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
             const el = document.createElement('div');
             el.style.cssText = `
@@ -148,7 +148,6 @@ export default function GrassMap() {
               : `${index + 1}${point.status === 'liked' ? ' <span style="margin-left:2px;font-size:16px;">🌱</span>' : ''}`;
             el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
             el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
-            el.addEventListener('click', () => { toggleGrassPoint(point.id); });
             const popup = new Popup({ offset: 25, className: 'grass-point-popup' }).setHTML(`
               <div class="p-3 min-w-[200px]">
                 <div class="flex items-center gap-2 mb-2">
@@ -160,7 +159,6 @@ export default function GrassMap() {
                 </div>
                 ${point.description ? `<p class="text-xs text-gray-600 mb-2">${point.description}</p>` : ''}
                 <p class="text-xs text-gray-500 mb-3">📍 ${point.address}</p>
-                ${point.comment ? `<div class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700 border flex items-start gap-2"><span style="font-size:1.1em;">💬</span><span>${point.comment}</span></div>` : ''}
                 <div class="flex gap-2">
                   <button onclick="window.mapService_openNavigation('${point.address}', ${point.lat}, ${point.lng})" 
                           class="flex-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">

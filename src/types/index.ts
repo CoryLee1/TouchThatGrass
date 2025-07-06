@@ -12,7 +12,7 @@ export interface GrassPoint {
     time?: string;
     status?: 'none' | 'liked' | 'disliked';
     photoUrl?: string;
-    comment?: string;
+    comments?: { text: string; user?: string; time?: string }[];
   }
   
   export interface TravelPlan {
