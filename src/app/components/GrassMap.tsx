@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTravelPlanContext } from '@/app/page';
 import { GRASS_POINT_TYPES } from '@/constants/prompts';
 import { MapService } from '@/app/services/mapService';
+import ShareCard from './ShareCard';
 
 // 动态导入mapbox
 let mapboxgl: any = null;
@@ -24,6 +25,8 @@ export default function GrassMap() {
   const [isLoadingCoords, setIsLoadingCoords] = useState(false);
   const [userLocation, setUserLocation] = useState<any>(null);
   const [mapService, setMapService] = useState<'amap' | 'mapbox'>('mapbox');
+  const [showShareCard, setShowShareCard] = useState(false);
+  const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   
   if (!state.currentPlan) {
     return (
@@ -40,6 +43,21 @@ export default function GrassMap() {
   const { grassPoints } = state.currentPlan;
   const completedCount = grassPoints.filter(p => p.completed).length;
   const progress = grassPoints.length > 0 ? (completedCount / grassPoints.length) * 100 : 0;
+  const isAllCompleted = completedCount === grassPoints.length && grassPoints.length > 0;
+
+  // 检测完成状态变化
+  useEffect(() => {
+    if (isAllCompleted && !showCompletionCelebration) {
+      // 显示完成庆祝效果
+      setShowCompletionCelebration(true);
+      
+      // 2秒后自动显示分享卡片
+      setTimeout(() => {
+        setShowShareCard(true);
+        setShowCompletionCelebration(false);
+      }, 2000);
+    }
+  }, [isAllCompleted, showCompletionCelebration]);
 
   // 初始化：检测用户位置和推荐地图服务
   useEffect(() => {
@@ -220,7 +238,29 @@ export default function GrassMap() {
   const isMapSupported = MapService.isMapSupported();
 
   return (
-    <div className="h-full bg-gray-50 flex flex-col">
+    <div className="h-full bg-gray-50 flex flex-col relative">
+      {/* 完成庆祝动画 */}
+      {showCompletionCelebration && (
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center z-40">
+          <div className="text-center text-white">
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <div className="text-2xl font-bold mb-2">恭喜完成所有打卡！</div>
+            <div className="text-lg opacity-90">你的旅程精彩纷呈</div>
+            <div className="mt-4 flex justify-center space-x-4">
+              <span className="text-4xl animate-pulse">✨</span>
+              <span className="text-4xl animate-pulse" style={{animationDelay: '0.2s'}}>🌟</span>
+              <span className="text-4xl animate-pulse" style={{animationDelay: '0.4s'}}>⭐</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 分享卡片 */}
+      <ShareCard 
+        isVisible={showShareCard} 
+        onClose={() => setShowShareCard(false)} 
+      />
+
       {/* 头部信息 */}
       <div className="bg-white p-4 border-b">
         <div className="flex items-center justify-between mb-3">
@@ -241,12 +281,34 @@ export default function GrassMap() {
           </div>
         </div>
         
+        {/* 进度条 */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
           <div 
-            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+            className={`h-2 rounded-full transition-all duration-300 ${
+              isAllCompleted ? 'bg-gradient-to-r from-green-400 to-green-600' : 'bg-blue-500'
+            }`}
             style={{ width: `${progress}%` }}
           />
         </div>
+
+        {/* 完成状态提示 */}
+        {isAllCompleted && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3 mb-3">
+            <div className="flex items-center gap-2 text-green-700">
+              <span className="text-xl">🎊</span>
+              <div>
+                <div className="font-medium">全部打卡完成！</div>
+                <div className="text-sm">点击分享按钮记录这次精彩旅程</div>
+              </div>
+              <button
+                onClick={() => setShowShareCard(true)}
+                className="ml-auto px-3 py-1 bg-green-500 text-white text-sm rounded-full hover:bg-green-600 transition-colors"
+              >
+                📱 分享
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 地图服务信息 */}
         {userLocation && (
@@ -309,7 +371,7 @@ export default function GrassMap() {
       <div className="flex-1 overflow-hidden">
         {viewMode === 'map' ? (
           !isMapSupported ? (
-                          <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-full">
               <div className="text-center p-6">
                 <div className="text-4xl mb-3">🗺️</div>
                 <div className="text-lg font-medium mb-2">地图功能未配置</div>
@@ -342,13 +404,13 @@ export default function GrassMap() {
                     onClick={() => toggleGrassPoint(point.id)}
                     className={`p-4 rounded-xl border cursor-pointer transition-all ${
                       point.completed 
-                        ? 'bg-green-50 border-green-300' 
+                        ? 'bg-green-50 border-green-300 transform scale-[0.98]' 
                         : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${
-                        point.completed ? 'bg-green-500 text-white' : 'bg-gray-100'
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all ${
+                        point.completed ? 'bg-green-500 text-white animate-pulse' : 'bg-gray-100'
                       }`}>
                         {point.completed ? '✓' : index + 1}
                       </div>
@@ -364,6 +426,11 @@ export default function GrassMap() {
                           >
                             {point.type}
                           </span>
+                          {point.completed && (
+                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                              已完成
+                            </span>
+                          )}
                         </div>
                         
                         {point.description && (
@@ -393,6 +460,23 @@ export default function GrassMap() {
                 );
               })}
             </div>
+
+            {/* 分享提醒 */}
+            {isAllCompleted && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">🎉</div>
+                  <div className="font-medium text-purple-800 mb-2">太棒了！所有草点都打卡完成</div>
+                  <div className="text-sm text-purple-600 mb-3">分享你的精彩旅程给朋友们吧</div>
+                  <button
+                    onClick={() => setShowShareCard(true)}
+                    className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-600 hover:to-pink-600 transition-colors"
+                  >
+                    📱 生成分享卡片
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

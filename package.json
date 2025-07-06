@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
+    "@types/html2canvas": "^1.0.0",
     "ai": "^4.3.16",
     "axios": "^1.10.0",
+    "html2canvas": "^1.4.1",
     "mapbox-gl": "^3.13.0",
     "next": "15.3.5",
     "openai": "^5.8.2",
