@@ -26,7 +26,7 @@ function TravelAppContent() {
   const { state, toggleGrassPoint, reorderGrassPoints, updateGrassPointTime, updateGrassPointStatus, updateGrassPointPhoto, updateGrassPointComment } = React.useContext(TravelPlanContext)!;
   const grassPoints = state.currentPlan ? state.currentPlan.grassPoints : [];
   return (
-    <div className="h-screen flex flex-col bg-gray-100 max-w-md mx-auto">
+    <div className="h-[100dvh] flex flex-col bg-gray-100 max-w-md mx-auto">
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chat' && <ChatBox />}
         {activeTab === 'map' && <GrassMap />}

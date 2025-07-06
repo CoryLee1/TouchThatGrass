@@ -35,7 +35,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
   ];
 
   return (
-    <div className="bg-white border-t">
+    <div className="bg-white border-t pb-[env(safe-area-inset-bottom)]">
       <div className="flex">
         {tabs.map((tab) => (
           <button

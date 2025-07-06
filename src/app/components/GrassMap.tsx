@@ -6,7 +6,6 @@ import { GRASS_POINT_TYPES } from '@/constants/prompts';
 import { MapService } from '@/app/services/mapService';
 import ShareCard from './ShareCard';
 import { visualizeGrassPoints, visualizeRouteLine } from '@/app/services/visualizeRoute';
-import RouteListPanel from './RouteListPanel';
 
 // 定义 UserLocation 类型
 interface UserLocation {
@@ -24,10 +23,9 @@ interface WindowWithMapService extends Window {
 }
 
 export default function GrassMap() {
-  const { state, toggleGrassPoint, updatePlan, reorderGrassPoints, updateGrassPointTime, updateGrassPointStatus, updateGrassPointPhoto, updateGrassPointComment } = useTravelPlanContext();
+  const { state, toggleGrassPoint, updatePlan } = useTravelPlanContext();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [isLoadingCoords, setIsLoadingCoords] = useState(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [mapService, setMapService] = useState<'amap' | 'mapbox'>('mapbox');
@@ -89,7 +87,7 @@ export default function GrassMap() {
   useEffect(() => {
     let map: import('mapbox-gl').Map | null = null;
 
-    if (!mapContainer.current || mapRef.current || viewMode !== 'map') return;
+    if (!mapContainer.current || mapRef.current) return;
     const pointsWithCoords = grassPoints.filter(p => p.lat && p.lng);
     if (pointsWithCoords.length === 0) return;
     const center = MapService.getMapCenter(grassPoints);
@@ -201,7 +199,7 @@ export default function GrassMap() {
       markersRef.current.forEach(m => m.remove());
       markersRef.current = [];
     };
-  }, [grassPoints, toggleGrassPoint, viewMode]);
+  }, [grassPoints, toggleGrassPoint]);
 
   useEffect(() => {
     (window as unknown as WindowWithMapService).mapService_openNavigation = (address: string, lat: number, lng: number) => {
@@ -301,35 +299,8 @@ export default function GrassMap() {
           </div>
         )}
 
-        {/* 视图切换 */}
-        <div className="flex gap-2 mb-3">
-          <button
-            onClick={() => setViewMode('list')}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === 'list' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            📋 列表模式
-          </button>
-          <button
-            onClick={() => setViewMode('map')}
-            disabled={!isMapSupported}
-            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === 'map' 
-                ? 'bg-blue-500 text-white' 
-                : isMapSupported 
-                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            🗺️ 地图模式
-          </button>
-        </div>
-
         {/* 获取坐标按钮 */}
-        {viewMode === 'map' && isMapSupported && !hasCoordinates && (
+        {!hasCoordinates && (
           <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="text-sm text-orange-700 mb-2">
               📍 需要获取草点坐标才能显示地图
@@ -347,130 +318,28 @@ export default function GrassMap() {
 
       {/* 主内容区 */}
       <div className="flex-1 overflow-hidden relative">
-        {viewMode === 'map' ? (
-          !isMapSupported ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center p-6">
-                <div className="text-4xl mb-3">🗺️</div>
-                <div className="text-lg font-medium mb-2">地图功能未配置</div>
-                <div className="text-sm text-gray-600">
-                  请设置环境变量<br/>
-                  <code className="bg-gray-100 px-2 py-1 rounded text-xs">NEXT_PUBLIC_MAPBOX_TOKEN</code>
-                </div>
+        {/* 只保留地图本身 */}
+        {!isMapSupported ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-6">
+              <div className="text-4xl mb-3">🗺️</div>
+              <div className="text-lg font-medium mb-2">地图功能未配置</div>
+              <div className="text-sm text-gray-600">
+                请设置环境变量<br/>
+                <code className="bg-gray-100 px-2 py-1 rounded text-xs">NEXT_PUBLIC_MAPBOX_TOKEN</code>
               </div>
             </div>
-          ) : !hasCoordinates ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center p-6">
-                <div className="text-4xl mb-3">📍</div>
-                <div className="text-lg font-medium mb-2">等待获取坐标</div>
-                <div className="text-sm text-gray-600">点击上方按钮获取草点坐标</div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div ref={mapContainer} className="w-full h-full" />
-              {/* 路线底部面板，带动画 */}
-              <RouteListPanel
-                grassPoints={grassPoints}
-                onToggleComplete={toggleGrassPoint}
-                onReorder={reorderGrassPoints}
-                onTimeChange={updateGrassPointTime}
-                onStatusChange={updateGrassPointStatus}
-                onPhoto={updateGrassPointPhoto}
-                onCommentChange={(id, comment) => {
-                  updateGrassPointComment(id, comment);
-                  console.log('评论已发送', id, comment);
-                }}
-              />
-            </>
-          )
-        ) : (
-          /* 列表视图 */
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-3">
-              {grassPoints.map((point, index) => {
-                const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
-                return (
-                  <div 
-                    key={point.id}
-                    onClick={() => toggleGrassPoint(point.id)}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                      point.completed 
-                        ? 'bg-green-50 border-green-300 transform scale-[0.98]' 
-                        : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all ${
-                        point.completed ? 'bg-green-500 text-white animate-pulse' : 'bg-gray-100'
-                      }`}>
-                        {point.completed ? '✓' : index + 1}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className={`font-medium ${point.completed ? 'line-through text-gray-500' : ''}`}>
-                            {point.name}
-                          </h3>
-                          <span 
-                            className="text-xs px-2 py-1 rounded-full"
-                            style={{ backgroundColor: typeInfo.color + '20', color: typeInfo.color }}
-                          >
-                            {point.type}
-                          </span>
-                          {point.completed && (
-                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                              已完成
-                            </span>
-                          )}
-                        </div>
-                        
-                        {point.description && (
-                          <p className="text-sm text-gray-600 mb-2">{point.description}</p>
-                        )}
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="text-xs text-gray-500 flex-1">
-                            📍 {point.address}
-                            {point.lat && point.lng && (
-                              <span className="text-green-600 ml-2">✓ 有坐标</span>
-                            )}
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              MapService.openNavigation(point.address, point.lat, point.lng);
-                            }}
-                            className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 ml-2"
-                          >
-                            智能导航
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* 分享提醒 */}
-            {isAllCompleted && (
-              <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
-                <div className="text-center">
-                  <div className="text-2xl mb-2">🎉</div>
-                  <div className="font-medium text-purple-800 mb-2">太棒了！所有草点都打卡完成</div>
-                  <div className="text-sm text-purple-600 mb-3">分享你的精彩旅程给朋友们吧</div>
-                  <button
-                    onClick={() => setShowShareCard(true)}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full hover:from-purple-600 hover:to-pink-600 transition-colors"
-                  >
-                    📱 生成分享卡片
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
+        ) : !hasCoordinates ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center p-6">
+              <div className="text-4xl mb-3">📍</div>
+              <div className="text-lg font-medium mb-2">等待获取坐标</div>
+              <div className="text-sm text-gray-600">点击上方按钮获取草点坐标</div>
+            </div>
+          </div>
+        ) : (
+          <div ref={mapContainer} className="w-full h-full" />
         )}
       </div>
     </div>

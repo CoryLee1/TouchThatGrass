@@ -83,7 +83,7 @@ export default function ChatBox() {
         <div ref={endRef} />
       </div>
 
-      <div className="border-t p-4">
+      <div className="border-t p-4 pb-[env(safe-area-inset-bottom)]">
         <div className="flex gap-3">
           <input
             value={input}
