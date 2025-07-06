@@ -15,17 +15,6 @@ interface UserLocation {
   lng?: number;
 }
 
-let mapboxgl: typeof import('mapbox-gl') | null = null;
-if (typeof window !== 'undefined') {
-  import('mapbox-gl').then(module => {
-    const mapbox = module.default || module;
-    mapboxgl = mapbox;
-    if (process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
-      mapbox.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-    }
-  });
-}
-
 // 定义 WindowWithMapService 类型
 interface WindowWithMapService extends Window {
   mapService_openNavigation?: (address: string, lat: number, lng: number) => void;
@@ -95,84 +84,94 @@ export default function GrassMap() {
   }, [grassPoints]);
 
   useEffect(() => {
-    if (!mapboxgl || !mapContainer.current || mapRef.current || viewMode !== 'map') return;
+    let map: import('mapbox-gl').Map | null = null;
+
+    if (!mapContainer.current || mapRef.current || viewMode !== 'map') return;
     const pointsWithCoords = grassPoints.filter(p => p.lat && p.lng);
     if (pointsWithCoords.length === 0) return;
     const center = MapService.getMapCenter(grassPoints);
     if (!center) return;
-    // 类型守卫，确保 mapboxgl 不为 null
-    const Map = mapboxgl.Map;
-    const Popup = mapboxgl.Popup;
-    const Marker = mapboxgl.Marker;
-    const LngLatBounds = mapboxgl.LngLatBounds;
-    if (!Map || !Popup || !Marker || !LngLatBounds) return;
-    const map = new Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center,
-      zoom: 13
-    });
-    map.on('load', () => {
-      pointsWithCoords.forEach((point, index) => {
-        const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
-        const el = document.createElement('div');
-        el.style.cssText = `
-          width: 35px;
-          height: 35px;
-          background: ${point.completed ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #3B82F6, #1D4ED8)'};
-          border: 3px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          font-weight: bold;
-          color: white;
-          cursor: pointer;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          transition: transform 0.2s ease;
-        `;
-        el.textContent = point.completed ? '✓' : (index + 1).toString();
-        el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
-        el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
-        el.addEventListener('click', () => { toggleGrassPoint(point.id); });
-        const popup = new Popup({ offset: 25, className: 'grass-point-popup' }).setHTML(`
-          <div class="p-3 min-w-[200px]">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-lg">${typeInfo.icon}</span>
-              <h3 class="font-bold text-sm">${point.name}</h3>
-              <span class="text-xs px-2 py-1 rounded-full" style="background-color: ${typeInfo.color}20; color: ${typeInfo.color}">
-                ${point.type}
-              </span>
-            </div>
-            ${point.description ? `<p class="text-xs text-gray-600 mb-2">${point.description}</p>` : ''}
-            <p class="text-xs text-gray-500 mb-3">📍 ${point.address}</p>
-            <div class="flex gap-2">
-              <button onclick="window.mapService_openNavigation('${point.address}', ${point.lat}, ${point.lng})" 
-                      class="flex-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">
-                🧭 智能导航
-              </button>
-              <button onclick="window.mapService_togglePoint('${point.id}')" 
-                      class="px-3 py-1 ${point.completed ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'} text-white text-xs rounded transition-colors">
-                ${point.completed ? '↩️ 撤销' : '✅ 完成'}
-              </button>
-            </div>
-          </div>
-        `);
-        new Marker(el)
-          .setLngLat([point.lng!, point.lat!])
-          .setPopup(popup)
-          .addTo(map);
-      });
-      if (pointsWithCoords.length > 1) {
-        const bounds = new LngLatBounds();
-        pointsWithCoords.forEach(point => {
-          bounds.extend([point.lng!, point.lat!]);
-        });
-        map.fitBounds(bounds, { padding: 50 });
+
+    import('mapbox-gl').then(module => {
+      const mapbox = module.default || module;
+      if (process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
+        mapbox.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
       }
+      const Map = mapbox.Map;
+      const Popup = mapbox.Popup;
+      const Marker = mapbox.Marker;
+      const LngLatBounds = mapbox.LngLatBounds;
+      if (!Map || !Popup || !Marker || !LngLatBounds) return;
+      if (!mapContainer.current) return;
+      map = new Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center,
+        zoom: 13
+      });
+      map.on('load', () => {
+        pointsWithCoords.forEach((point, index) => {
+          const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
+          const el = document.createElement('div');
+          el.style.cssText = `
+            width: 35px;
+            height: 35px;
+            background: ${point.completed ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #3B82F6, #1D4ED8)'};
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+          `;
+          el.textContent = point.completed ? '✓' : (index + 1).toString();
+          el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
+          el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
+          el.addEventListener('click', () => { toggleGrassPoint(point.id); });
+          const popup = new Popup({ offset: 25, className: 'grass-point-popup' }).setHTML(`
+            <div class="p-3 min-w-[200px]">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-lg">${typeInfo.icon}</span>
+                <h3 class="font-bold text-sm">${point.name}</h3>
+                <span class="text-xs px-2 py-1 rounded-full" style="background-color: ${typeInfo.color}20; color: ${typeInfo.color}">
+                  ${point.type}
+                </span>
+              </div>
+              ${point.description ? `<p class="text-xs text-gray-600 mb-2">${point.description}</p>` : ''}
+              <p class="text-xs text-gray-500 mb-3">📍 ${point.address}</p>
+              <div class="flex gap-2">
+                <button onclick="window.mapService_openNavigation('${point.address}', ${point.lat}, ${point.lng})" 
+                        class="flex-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">
+                  🧭 智能导航
+                </button>
+                <button onclick="window.mapService_togglePoint('${point.id}')" 
+                        class="px-3 py-1 ${point.completed ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'} text-white text-xs rounded transition-colors">
+                  ${point.completed ? '↩️ 撤销' : '✅ 完成'}
+                </button>
+              </div>
+            </div>
+          `);
+          new Marker(el)
+            .setLngLat([point.lng!, point.lat!])
+            .setPopup(popup)
+            .addTo(map!);
+        });
+        if (pointsWithCoords.length > 1) {
+          const bounds = new LngLatBounds();
+          pointsWithCoords.forEach(point => {
+            bounds.extend([point.lng!, point.lat!]);
+          });
+          map!.fitBounds(bounds, { padding: 50 });
+        }
+      });
+      mapRef.current = map;
     });
-    mapRef.current = map;
+
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
