@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useTravelPlanContext } from '@/app/page'; // 从page.tsx导入context
+import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
 
 export default function ChatBox() {
   const { state, addMessage, setLoading } = useTravelPlanContext();
@@ -36,7 +36,7 @@ export default function ChatBox() {
       const data = await res.json();
       const aiReply = data?.result?.content || '抱歉，AI没有回复。';
       addMessage({ role: 'assistant', content: aiReply });
-    } catch (e) {
+    } catch {
       addMessage({ role: 'assistant', content: '😥 网络错误，请重试' });
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ export default function ChatBox() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            onKeyPress={() => input.trim() && sendMessage()}
             placeholder="想去哪个城市玩？🌍"
             className="flex-1 px-4 py-3 border rounded-full focus:outline-none focus:border-blue-500"
             disabled={state.loading}

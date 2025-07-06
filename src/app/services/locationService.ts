@@ -1,4 +1,6 @@
 // services/locationService.ts
+import { GrassPoint } from '@/types';
+
 export interface UserLocation {
     country: string;
     countryCode: string;
@@ -36,7 +38,7 @@ export interface UserLocation {
         });
   
         return ipLocation;
-      } catch (error) {
+      } catch {
         console.warn('位置检测失败，使用默认位置');
         return this.getDefaultLocation();
       }
@@ -143,7 +145,7 @@ export interface UserLocation {
     }
   
     // 根据用户位置和草点位置选择最佳地图服务
-    static async getOptimalMapService(grassPoints: any[]): Promise<'amap' | 'mapbox'> {
+    static async getOptimalMapService(grassPoints: GrassPoint[]): Promise<'amap' | 'mapbox'> {
       const userLocation = await this.getUserLocation();
       
       // 检查草点是否有中国地址

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useTravelPlanContext } from '@/app/page';
+import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
 
 interface TabNavigationProps {
   activeTab: string;

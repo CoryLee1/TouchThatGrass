@@ -1,96 +1,68 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useTravelPlanContext } from '@/app/page';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
 import { GRASS_POINT_TYPES } from '@/constants/prompts';
 import { MapService } from '@/app/services/mapService';
 import ShareCard from './ShareCard';
 
-// 动态导入mapbox
-let mapboxgl: any = null;
+// 定义 UserLocation 类型
+interface UserLocation {
+  city?: string;
+  country?: string;
+  isChina?: boolean;
+  lat?: number;
+  lng?: number;
+}
+
+let mapboxgl: typeof import('mapbox-gl') | null = null;
 if (typeof window !== 'undefined') {
   import('mapbox-gl').then(module => {
-    mapboxgl = module.default;
+    mapboxgl = module;
     if (process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
+      // @ts-expect-error: accessToken is a runtime property not in types
       mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     }
   });
 }
 
+// 定义 WindowWithMapService 类型
+interface WindowWithMapService extends Window {
+  mapService_openNavigation?: (address: string, lat: number, lng: number) => void;
+  mapService_togglePoint?: (pointId: string) => void;
+}
+
 export default function GrassMap() {
   const { state, toggleGrassPoint, updatePlan } = useTravelPlanContext();
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [isLoadingCoords, setIsLoadingCoords] = useState(false);
-  const [userLocation, setUserLocation] = useState<any>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [mapService, setMapService] = useState<'amap' | 'mapbox'>('mapbox');
   const [showShareCard, setShowShareCard] = useState(false);
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
-  
-  if (!state.currentPlan) {
-    return (
-      <div className="flex items-center justify-center h-full bg-gray-50">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🗺️</div>
-          <div className="text-lg font-medium mb-2">还没有行程</div>
-          <div className="text-gray-500">先在聊天页面生成旅行计划吧</div>
-        </div>
-      </div>
-    );
-  }
 
-  const { grassPoints } = state.currentPlan;
+  // hooks 必须在顶层
+  const currentPlan = state.currentPlan;
+  const grassPoints = useMemo(() => currentPlan ? currentPlan.grassPoints : [], [currentPlan]);
   const completedCount = grassPoints.filter(p => p.completed).length;
   const progress = grassPoints.length > 0 ? (completedCount / grassPoints.length) * 100 : 0;
   const isAllCompleted = completedCount === grassPoints.length && grassPoints.length > 0;
 
-  // 检测完成状态变化
-  useEffect(() => {
-    if (isAllCompleted && !showCompletionCelebration) {
-      // 显示完成庆祝效果
-      setShowCompletionCelebration(true);
-      
-      // 2秒后自动显示分享卡片
-      setTimeout(() => {
-        setShowShareCard(true);
-        setShowCompletionCelebration(false);
-      }, 2000);
-    }
-  }, [isAllCompleted, showCompletionCelebration]);
-
-  // 初始化：检测用户位置和推荐地图服务
-  useEffect(() => {
-    const initializeLocation = async () => {
-      try {
-        console.log('🌍 初始化用户位置检测...');
-        const location = await MapService.getUserLocationInfo();
-        setUserLocation(location);
-        
-        const recommendedService = await MapService.getRecommendedMapService(grassPoints);
-        setMapService(recommendedService);
-        
-        console.log('📍 用户位置:', location);
-        console.log('🗺️ 推荐地图服务:', recommendedService);
-      } catch (error) {
-        console.error('位置初始化失败:', error);
-      }
-    };
-
-    initializeLocation();
-  }, [grassPoints]);
-
-  // 获取坐标
+  // 事件函数 handleGetCoordinates
   const handleGetCoordinates = async () => {
     setIsLoadingCoords(true);
     try {
       const updatedPoints = await MapService.addCoordinatesToGrassPoints(grassPoints);
-      updatePlan({
-        id: state.currentPlan!.id,
-        title: state.currentPlan!.title,
-        city: state.currentPlan!.city,
-        grassPoints: updatedPoints
-      });
+      if (currentPlan) {
+        updatePlan({
+          id: currentPlan.id,
+          title: currentPlan.title,
+          city: currentPlan.city,
+          grassPoints: updatedPoints
+        });
+      }
     } catch (error) {
       console.error('Failed to get coordinates:', error);
     } finally {
@@ -98,38 +70,51 @@ export default function GrassMap() {
     }
   };
 
-  // 地图初始化
+  useEffect(() => {
+    if (isAllCompleted && !showCompletionCelebration) {
+      setShowCompletionCelebration(true);
+      setTimeout(() => {
+        setShowShareCard(true);
+        setShowCompletionCelebration(false);
+      }, 2000);
+    }
+  }, [isAllCompleted, showCompletionCelebration]);
+
+  useEffect(() => {
+    const initializeLocation = async () => {
+      try {
+        const location = await MapService.getUserLocationInfo();
+        setUserLocation(location);
+        const recommendedService = await MapService.getRecommendedMapService(grassPoints);
+        setMapService(recommendedService);
+      } catch (error) {
+        console.error('位置初始化失败:', error);
+      }
+    };
+    initializeLocation();
+  }, [grassPoints]);
+
   useEffect(() => {
     if (!mapboxgl || !mapContainer.current || mapRef.current || viewMode !== 'map') return;
-
     const pointsWithCoords = grassPoints.filter(p => p.lat && p.lng);
-    console.log('🗺️ 准备显示的草点:', pointsWithCoords);
-    
     if (pointsWithCoords.length === 0) return;
-
     const center = MapService.getMapCenter(grassPoints);
     if (!center) return;
-
-    console.log('🎯 地图中心点:', center);
-
-    const map = new mapboxgl.Map({
+    // 类型守卫，确保 mapboxgl 不为 null
+    const Map = mapboxgl.Map;
+    const Popup = mapboxgl.Popup;
+    const Marker = mapboxgl.Marker;
+    const LngLatBounds = mapboxgl.LngLatBounds;
+    if (!Map || !Popup || !Marker || !LngLatBounds) return;
+    const map = new Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
       center,
       zoom: 13
     });
-
-    // 等地图加载完成后添加标记
     map.on('load', () => {
-      console.log('✅ 地图加载完成，开始添加标记');
-      
-      // 添加每个草点标记
       pointsWithCoords.forEach((point, index) => {
         const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
-        
-        console.log(`📍 添加标记 ${index + 1}: ${point.name} at ${point.lat}, ${point.lng}`);
-        
-        // 创建标记元素
         const el = document.createElement('div');
         el.style.cssText = `
           width: 35px;
@@ -147,29 +132,11 @@ export default function GrassMap() {
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           transition: transform 0.2s ease;
         `;
-        
         el.textContent = point.completed ? '✓' : (index + 1).toString();
-        
-        // 悬停效果
-        el.addEventListener('mouseenter', () => {
-          el.style.transform = 'scale(1.1)';
-        });
-        
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'scale(1)';
-        });
-        
-        // 点击事件
-        el.addEventListener('click', () => {
-          console.log('点击了草点:', point.name);
-          toggleGrassPoint(point.id);
-        });
-
-        // 添加弹窗
-        const popup = new mapboxgl.Popup({ 
-          offset: 25,
-          className: 'grass-point-popup'
-        }).setHTML(`
+        el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
+        el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
+        el.addEventListener('click', () => { toggleGrassPoint(point.id); });
+        const popup = new Popup({ offset: 25, className: 'grass-point-popup' }).setHTML(`
           <div class="p-3 min-w-[200px]">
             <div class="flex items-center gap-2 mb-2">
               <span class="text-lg">${typeInfo.icon}</span>
@@ -192,29 +159,20 @@ export default function GrassMap() {
             </div>
           </div>
         `);
-
-        // 添加标记到地图
-        new mapboxgl.Marker(el)
+        new Marker(el)
           .setLngLat([point.lng!, point.lat!])
           .setPopup(popup)
           .addTo(map);
-
-        console.log('✅ 标记添加成功:', point.name);
       });
-
-      // 自动调整视图包含所有点
       if (pointsWithCoords.length > 1) {
-        const bounds = new mapboxgl.LngLatBounds();
+        const bounds = new LngLatBounds();
         pointsWithCoords.forEach(point => {
           bounds.extend([point.lng!, point.lat!]);
         });
         map.fitBounds(bounds, { padding: 50 });
-        console.log('📏 调整地图视图完成');
       }
     });
-
     mapRef.current = map;
-
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
@@ -223,13 +181,11 @@ export default function GrassMap() {
     };
   }, [grassPoints, toggleGrassPoint, viewMode]);
 
-  // 全局函数，供弹窗调用
   useEffect(() => {
-    (window as any).mapService_openNavigation = (address: string, lat: number, lng: number) => {
+    (window as unknown as WindowWithMapService).mapService_openNavigation = (address: string, lat: number, lng: number) => {
       MapService.openNavigation(address, lat, lng);
     };
-    
-    (window as any).mapService_togglePoint = (pointId: string) => {
+    (window as unknown as WindowWithMapService).mapService_togglePoint = (pointId: string) => {
       toggleGrassPoint(pointId);
     };
   }, [toggleGrassPoint]);
@@ -265,9 +221,9 @@ export default function GrassMap() {
       <div className="bg-white p-4 border-b">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="font-bold text-lg">{state.currentPlan.title}</h2>
+            <h2 className="font-bold text-lg">{state.currentPlan?.title ?? ''}</h2>
             <div className="text-sm text-gray-600 flex items-center gap-2">
-              {state.currentPlan.city}
+              {state.currentPlan?.city ?? ''}
               {userLocation && (
                 <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
                   {userLocation.isChina ? '🇨🇳' : '🌍'} {userLocation.country}

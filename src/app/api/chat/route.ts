@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   try {
     const { messages, temperature = 0.7, model = 'gpt-4o' } = await req.json();
     // 从用户消息中提取最后一条输入
-    const userInput = messages?.filter(m => m.role === 'user').slice(-1)[0]?.content ?? '';
+    const userInput = (messages as { role: string; content: string }[] | undefined)?.filter((m: { role: string; content: string }) => m.role === 'user').slice(-1)[0]?.content ?? '';
 
     // ====== 你的全世界种草官 system prompt ======
     const systemPrompt = `
@@ -19,9 +19,9 @@ export async function POST(req: Request) {
 请根据用户的语气、诉求、兴趣，自动判断本次旅程的国家、城市及风格（如文艺、美食、探店、亲子、闺蜜游等），用清单形式生成详细【一天行程表】。
 
 要求如下：
-1. 用标题描述本次旅程的风格和主题（如“东京文艺咖啡一日游”或“巴黎闺蜜时尚体验”）。
+1. 用标题描述本次旅程的风格和主题（如"东京文艺咖啡一日游"或"巴黎闺蜜时尚体验"）。
 2. 行程表按时间段罗列，每一项包含【时间】【打卡/活动/餐饮点名称】【理由/亮点】【具体地址】。
-3. 行程不少于3个“种草点”，并用#草点高亮。
+3. 行程不少于3个"种草点"，并用#草点高亮。
 4. 最后总结涉及的所有草点和它们的地理位置，用JSON结构化输出：
 [
   {"name": "Cafe Kitsune Paris", "type": "咖啡馆", "address": "51 Galerie de Montpensier, 75001 Paris, France"},
@@ -54,7 +54,7 @@ ${userInput}
       ok: true,
       result: completion.choices[0].message,
     });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: (err as any).message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 }

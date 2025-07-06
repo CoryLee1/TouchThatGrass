@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { useTravelPlanContext } from '@/app/page';
-import { ShareService } from '@/app/services/shareService';
+import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
+import { ShareService } from '../services/shareService';
 
 interface ShareCardProps {
   isVisible: boolean;
@@ -53,7 +53,7 @@ export default function ShareCard({ isVisible, onClose }: ShareCardProps) {
 
     setIsGenerating(true);
     try {
-      const canvas = await ShareService.generateShareImage(cardRef.current, state.currentPlan);
+      const canvas = await ShareService.generateShareImage(cardRef.current);
       return canvas.toDataURL('image/png', 0.9);
     } catch (error) {
       console.error('生成分享图片失败:', error);
@@ -78,8 +78,7 @@ export default function ShareCard({ isVisible, onClose }: ShareCardProps) {
     try {
       await ShareService.shareToplatform(platform, {
         text: shareText,
-        image: shareImage,
-        plan: state.currentPlan
+        image: shareImage
       });
     } catch (error) {
       console.error(`分享到${platform}失败:`, error);
@@ -136,7 +135,7 @@ export default function ShareCard({ isVisible, onClose }: ShareCardProps) {
 
             {/* 完成的草点展示 */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {plan.grassPoints.filter(p => p.completed).slice(0, 6).map((point, index) => (
+              {plan.grassPoints.filter(p => p.completed).slice(0, 6).map((point) => (
                 <div key={point.id} className="flex items-center bg-white bg-opacity-20 rounded-full px-3 py-1">
                   <span className="text-xs">✓ {point.name}</span>
                 </div>

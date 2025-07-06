@@ -1,10 +1,10 @@
 // src/app/services/shareService.ts
-import type { TravelPlan, GrassPoint } from '@/types';
+
+import type { TravelPlan } from '@/types';
 
 export interface ShareData {
   text: string;
   image: string;
-  plan: TravelPlan;
 }
 
 export class ShareService {
@@ -78,7 +78,7 @@ export class ShareService {
   }
 
   // 生成分享图片
-  static async generateShareImage(element: HTMLElement, plan: TravelPlan): Promise<HTMLCanvasElement> {
+  static async generateShareImage(element: HTMLElement): Promise<HTMLCanvasElement> {
     // 动态导入html2canvas
     const html2canvas = await import('html2canvas');
     
@@ -103,7 +103,7 @@ export class ShareService {
 
   // 分享到不同平台
   static async shareToplatform(platform: 'wechat' | 'instagram' | 'xiaohongshu' | 'twitter', data: ShareData): Promise<void> {
-    const { text, image, plan } = data;
+    const { text, image } = data;
 
     switch (platform) {
       case 'wechat':
@@ -126,7 +126,6 @@ export class ShareService {
   // 微信分享
   private static async shareToWechat(text: string, image: string): Promise<void> {
     if (this.isMobile() && this.isWechatBrowser()) {
-      // 在微信浏览器中，使用微信JS-SDK
       try {
         // 这里需要配置微信JS-SDK
         // wx.ready(() => {
@@ -141,12 +140,11 @@ export class ShareService {
         await this.copyToClipboard(text);
         this.downloadImage(image, '旅程分享卡片.png');
         alert('文案已复制，图片已下载！\n请在微信中粘贴文案并上传图片分享');
-      } catch (error) {
-        console.error('微信分享失败:', error);
+      } catch {
+        console.error('微信分享失败');
         await this.fallbackShare(text, image, '微信');
       }
     } else {
-      // 非微信环境的降级处理
       await this.fallbackShare(text, image, '微信');
     }
   }
@@ -166,7 +164,7 @@ export class ShareService {
       } else {
         await this.fallbackShare(text, image, '小红书');
       }
-    } catch (error) {
+    } catch {
       await this.fallbackShare(text, image, '小红书');
     }
   }
@@ -186,7 +184,7 @@ export class ShareService {
         // 桌面端直接降级
         await this.fallbackShare(text, image, 'Instagram');
       }
-    } catch (error) {
+    } catch {
       await this.fallbackShare(text, image, 'Instagram');
     }
   }
@@ -213,7 +211,7 @@ export class ShareService {
       // 同时下载图片
       this.downloadImage(image, '旅程分享卡片.png');
       
-    } catch (error) {
+    } catch {
       await this.fallbackShare(text, image, 'Twitter');
     }
   }

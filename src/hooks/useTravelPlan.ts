@@ -16,13 +16,13 @@ const parseAIResponse = (content: string): TravelPlan | null => {
     const cityMatch = content.match(/(东京|巴黎|纽约|伦敦|首尔|台北|香港|新加坡|上海|北京)/);
     const city = cityMatch ? cityMatch[1] : '未知城市';
     
-    const grassPoints: GrassPoint[] = grassPointsData.map((point: any) => ({
+    const grassPoints: GrassPoint[] = grassPointsData.map((point: Record<string, unknown>) => ({
       id: generateId(),
-      name: point.name || '',
-      type: point.type || '其他',
-      address: point.address || '',
+      name: typeof point.name === 'string' ? point.name : '',
+      type: typeof point.type === 'string' ? point.type : '其他',
+      address: typeof point.address === 'string' ? point.address : '',
       completed: false,
-      description: point.description || point.reason || ''
+      description: typeof point.description === 'string' ? point.description : (typeof point.reason === 'string' ? point.reason : '')
     }));
 
     return {
