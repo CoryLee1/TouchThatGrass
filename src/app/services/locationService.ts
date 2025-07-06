@@ -11,6 +11,7 @@ export interface UserLocation {
     };
     isChina: boolean;
     detectionMethod: 'ip' | 'gps' | 'unknown';
+    accuracy?: string;
   }
   
   export class LocationService {
@@ -176,5 +177,14 @@ export interface UserLocation {
     // 获取用户语言偏好
     static getUserLanguage(): string {
       return navigator.language || 'en-US';
+    }
+  
+    // 检查定位权限
+    static async checkLocationPermission(): Promise<string> {
+      if ('permissions' in navigator) {
+        const result = await navigator.permissions.query({ name: 'geolocation' });
+        return result.state;
+      }
+      return 'unknown';
     }
   }

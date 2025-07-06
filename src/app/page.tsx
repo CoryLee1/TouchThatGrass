@@ -1,3 +1,4 @@
+// src/app/page.tsx (更新版本)
 'use client';
 
 import React, { useState } from 'react';
@@ -6,6 +7,7 @@ import { TravelPlanContext } from '@/hooks/useTravelPlanContext';
 import ChatBox from './components/ChatBox';
 import GrassMap from './components/GrassMap';
 import TabNavigation from './components/TabNavigation';
+import LocationDetector from './components/LocationDetector';
 
 // ==================== Context Provider ====================
 function TravelPlanProvider({ children }: { children: React.ReactNode }) {
@@ -17,19 +19,28 @@ function TravelPlanProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ==================== 主页面 ====================
-export default function TravelApp() {
+// ==================== 主应用组件 ====================
+function TravelAppContent() {
   const [activeTab, setActiveTab] = useState('chat');
 
   return (
-    <TravelPlanProvider>
-      <div className="h-screen flex flex-col bg-gray-100 max-w-md mx-auto">
-        <div className="flex-1 overflow-hidden">
-          {activeTab === 'chat' && <ChatBox />}
-          {activeTab === 'map' && <GrassMap />}
-        </div>
-        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+    <div className="h-screen flex flex-col bg-gray-100 max-w-md mx-auto">
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'chat' && <ChatBox />}
+        {activeTab === 'map' && <GrassMap />}
       </div>
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+    </div>
+  );
+}
+
+// ==================== 主页面 ====================
+export default function TravelApp() {
+  return (
+    <TravelPlanProvider>
+      <LocationDetector>
+        <TravelAppContent />
+      </LocationDetector>
     </TravelPlanProvider>
   );
 }
