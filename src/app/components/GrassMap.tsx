@@ -18,10 +18,10 @@ interface UserLocation {
 let mapboxgl: typeof import('mapbox-gl') | null = null;
 if (typeof window !== 'undefined') {
   import('mapbox-gl').then(module => {
-    mapboxgl = module;
+    const mapbox = module.default || module;
+    mapboxgl = mapbox;
     if (process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
-      // @ts-expect-error: accessToken is a runtime property not in types
-      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      mapbox.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     }
   });
 }
