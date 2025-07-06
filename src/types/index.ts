@@ -9,6 +9,10 @@ export interface GrassPoint {
     description?: string;
     lat?: number;
     lng?: number;
+    time?: string;
+    status?: 'none' | 'liked' | 'disliked';
+    photoUrl?: string;
+    comment?: string;
   }
   
   export interface TravelPlan {

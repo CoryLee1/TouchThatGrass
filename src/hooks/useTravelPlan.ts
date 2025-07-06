@@ -88,11 +88,79 @@ export const useTravelPlan = () => {
     setState(prev => ({ ...prev, loading }));
   }, []);
 
+  // 新增：草点顺序、时间、状态、拍照、评论的全局更新方法
+  const reorderGrassPoints = useCallback((newOrder: GrassPoint[]) => {
+    setState(prev => {
+      if (!prev.currentPlan) return prev;
+      return {
+        ...prev,
+        currentPlan: { ...prev.currentPlan, grassPoints: newOrder }
+      };
+    });
+  }, []);
+
+  const updateGrassPointTime = useCallback((pointId: string, newTime: string) => {
+    setState(prev => {
+      if (!prev.currentPlan) return prev;
+      const updatedPoints = prev.currentPlan.grassPoints.map(point =>
+        point.id === pointId ? { ...point, time: newTime } : point
+      );
+      return {
+        ...prev,
+        currentPlan: { ...prev.currentPlan, grassPoints: updatedPoints }
+      };
+    });
+  }, []);
+
+  const updateGrassPointStatus = useCallback((pointId: string, status: 'liked' | 'disliked' | 'none') => {
+    setState(prev => {
+      if (!prev.currentPlan) return prev;
+      const updatedPoints = prev.currentPlan.grassPoints.map(point =>
+        point.id === pointId ? { ...point, status } : point
+      );
+      return {
+        ...prev,
+        currentPlan: { ...prev.currentPlan, grassPoints: updatedPoints }
+      };
+    });
+  }, []);
+
+  const updateGrassPointPhoto = useCallback((pointId: string, photoUrl: string) => {
+    setState(prev => {
+      if (!prev.currentPlan) return prev;
+      const updatedPoints = prev.currentPlan.grassPoints.map(point =>
+        point.id === pointId ? { ...point, photoUrl } : point
+      );
+      return {
+        ...prev,
+        currentPlan: { ...prev.currentPlan, grassPoints: updatedPoints }
+      };
+    });
+  }, []);
+
+  const updateGrassPointComment = useCallback((pointId: string, comment: string) => {
+    setState(prev => {
+      if (!prev.currentPlan) return prev;
+      const updatedPoints = prev.currentPlan.grassPoints.map(point =>
+        point.id === pointId ? { ...point, comment } : point
+      );
+      return {
+        ...prev,
+        currentPlan: { ...prev.currentPlan, grassPoints: updatedPoints }
+      };
+    });
+  }, []);
+
   return {
     state,
     updatePlan,
     addMessage,
     toggleGrassPoint,
-    setLoading
+    setLoading,
+    reorderGrassPoints,
+    updateGrassPointTime,
+    updateGrassPointStatus,
+    updateGrassPointPhoto,
+    updateGrassPointComment
   };
 };

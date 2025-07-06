@@ -25,6 +25,12 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
       badge: state.currentPlan ? 
         `${state.currentPlan.grassPoints.filter(p => p.completed).length}/${state.currentPlan.grassPoints.length}` 
         : null
+    },
+    {
+      id: 'routeList',
+      icon: '📋',
+      label: '路线列表',
+      badge: null
     }
   ];
 

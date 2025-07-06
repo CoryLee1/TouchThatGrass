@@ -118,12 +118,18 @@ export function visualizeRouteLine(
     ];
     let step = 0;
     function animateDashArray(timestamp: number) {
-      const newStep = Math.floor((timestamp / 50) % dashArraySequence.length);
-      if (newStep !== step) {
-        map.setPaintProperty('route-ant-anim', 'line-dasharray', dashArraySequence[newStep]);
-        step = newStep;
+      try {
+        if (!map || !map.getLayer('route-ant-anim')) return;
+        const newStep = Math.floor((timestamp / 50) % dashArraySequence.length);
+        if (newStep !== step) {
+          map.setPaintProperty('route-ant-anim', 'line-dasharray', dashArraySequence[newStep]);
+          step = newStep;
+        }
+        requestAnimationFrame(animateDashArray);
+      } catch {
+        // map 已销毁，停止动画
+        return;
       }
-      requestAnimationFrame(animateDashArray);
     }
     animateDashArray(0);
   }

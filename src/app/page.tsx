@@ -8,6 +8,7 @@ import ChatBox from './components/ChatBox';
 import GrassMap from './components/GrassMap';
 import TabNavigation from './components/TabNavigation';
 import LocationDetector from './components/LocationDetector';
+import RouteListPanel from './components/RouteListPanel';
 
 // ==================== Context Provider ====================
 function TravelPlanProvider({ children }: { children: React.ReactNode }) {
@@ -22,12 +23,24 @@ function TravelPlanProvider({ children }: { children: React.ReactNode }) {
 // ==================== 主应用组件 ====================
 function TravelAppContent() {
   const [activeTab, setActiveTab] = useState('chat');
-
+  const { state, toggleGrassPoint, reorderGrassPoints, updateGrassPointTime, updateGrassPointStatus, updateGrassPointPhoto, updateGrassPointComment } = React.useContext(TravelPlanContext)!;
+  const grassPoints = state.currentPlan ? state.currentPlan.grassPoints : [];
   return (
     <div className="h-screen flex flex-col bg-gray-100 max-w-md mx-auto">
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chat' && <ChatBox />}
         {activeTab === 'map' && <GrassMap />}
+        {activeTab === 'routeList' && (
+          <RouteListPanel
+            grassPoints={grassPoints}
+            onToggleComplete={toggleGrassPoint}
+            onReorder={reorderGrassPoints}
+            onTimeChange={updateGrassPointTime}
+            onStatusChange={updateGrassPointStatus}
+            onPhoto={updateGrassPointPhoto}
+            onCommentChange={updateGrassPointComment}
+          />
+        )}
       </div>
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>

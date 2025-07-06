@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { AppState, TravelPlan, Message } from '@/types';
+import type { AppState, TravelPlan, Message, GrassPoint } from '@/types';
 
 export const TravelPlanContext = createContext<{
   state: AppState;
@@ -7,6 +7,11 @@ export const TravelPlanContext = createContext<{
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
   toggleGrassPoint: (pointId: string) => void;
   setLoading: (loading: boolean) => void;
+  reorderGrassPoints: (newOrder: GrassPoint[]) => void;
+  updateGrassPointTime: (pointId: string, newTime: string) => void;
+  updateGrassPointStatus: (pointId: string, status: 'liked' | 'disliked' | 'none') => void;
+  updateGrassPointPhoto: (pointId: string, photoUrl: string) => void;
+  updateGrassPointComment: (pointId: string, comment: string) => void;
 } | null>(null);
 
 export function useTravelPlanContext() {

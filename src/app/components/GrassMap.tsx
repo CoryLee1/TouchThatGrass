@@ -6,6 +6,7 @@ import { GRASS_POINT_TYPES } from '@/constants/prompts';
 import { MapService } from '@/app/services/mapService';
 import ShareCard from './ShareCard';
 import { visualizeGrassPoints, visualizeRouteLine } from '@/app/services/visualizeRoute';
+import RouteListPanel from './RouteListPanel';
 
 // 定义 UserLocation 类型
 interface UserLocation {
@@ -23,7 +24,7 @@ interface WindowWithMapService extends Window {
 }
 
 export default function GrassMap() {
-  const { state, toggleGrassPoint, updatePlan } = useTravelPlanContext();
+  const { state, toggleGrassPoint, updatePlan, reorderGrassPoints, updateGrassPointTime, updateGrassPointStatus, updateGrassPointPhoto, updateGrassPointComment } = useTravelPlanContext();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
@@ -32,6 +33,7 @@ export default function GrassMap() {
   const [mapService, setMapService] = useState<'amap' | 'mapbox'>('mapbox');
   const [showShareCard, setShowShareCard] = useState(false);
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   // hooks 必须在顶层
   const currentPlan = state.currentPlan;
@@ -118,7 +120,11 @@ export default function GrassMap() {
             // 推荐路线为蓝色
             visualizeRouteLine(map!, pointsWithCoords, { color: '#3B82F6', width: 10, animated: true });
           }
+          // 清理旧 marker
+          markersRef.current.forEach(m => m.remove());
+          markersRef.current = [];
           pointsWithCoords.forEach((point, index) => {
+            console.log('marker', point.name, 'comment:', point.comment);
             const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
             const el = document.createElement('div');
             el.style.cssText = `
@@ -137,7 +143,9 @@ export default function GrassMap() {
               box-shadow: 0 2px 6px rgba(0,0,0,0.3);
               transition: transform 0.2s ease;
             `;
-            el.textContent = point.completed ? '✓' : (index + 1).toString();
+            el.innerHTML = point.completed
+              ? '✓'
+              : `${index + 1}${point.status === 'liked' ? ' <span style="margin-left:2px;font-size:16px;">🌱</span>' : ''}`;
             el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
             el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
             el.addEventListener('click', () => { toggleGrassPoint(point.id); });
@@ -152,6 +160,7 @@ export default function GrassMap() {
                 </div>
                 ${point.description ? `<p class="text-xs text-gray-600 mb-2">${point.description}</p>` : ''}
                 <p class="text-xs text-gray-500 mb-3">📍 ${point.address}</p>
+                ${point.comment ? `<div class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700 border flex items-start gap-2"><span style="font-size:1.1em;">💬</span><span>${point.comment}</span></div>` : ''}
                 <div class="flex gap-2">
                   <button onclick="window.mapService_openNavigation('${point.address}', ${point.lat}, ${point.lng})" 
                           class="flex-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">
@@ -164,10 +173,11 @@ export default function GrassMap() {
                 </div>
               </div>
             `);
-            new Marker(el)
+            const marker = new Marker(el)
               .setLngLat([point.lng!, point.lat!])
               .setPopup(popup)
               .addTo(map!);
+            markersRef.current.push(marker);
           });
           if (pointsWithCoords.length > 1) {
             const bounds = new LngLatBounds();
@@ -189,6 +199,9 @@ export default function GrassMap() {
         mapRef.current.remove();
         mapRef.current = null;
       }
+      // 清理 marker
+      markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
     };
   }, [grassPoints, toggleGrassPoint, viewMode]);
 
@@ -335,7 +348,7 @@ export default function GrassMap() {
       </div>
 
       {/* 主内容区 */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden relative">
         {viewMode === 'map' ? (
           !isMapSupported ? (
             <div className="flex items-center justify-center h-full">
@@ -357,7 +370,22 @@ export default function GrassMap() {
               </div>
             </div>
           ) : (
-            <div ref={mapContainer} className="w-full h-full" />
+            <>
+              <div ref={mapContainer} className="w-full h-full" />
+              {/* 路线底部面板，带动画 */}
+              <RouteListPanel
+                grassPoints={grassPoints}
+                onToggleComplete={toggleGrassPoint}
+                onReorder={reorderGrassPoints}
+                onTimeChange={updateGrassPointTime}
+                onStatusChange={updateGrassPointStatus}
+                onPhoto={updateGrassPointPhoto}
+                onCommentChange={(id, comment) => {
+                  updateGrassPointComment(id, comment);
+                  console.log('评论已发送', id, comment);
+                }}
+              />
+            </>
           )
         ) : (
           /* 列表视图 */
