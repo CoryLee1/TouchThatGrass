@@ -44,7 +44,7 @@ export default function ChatBox() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white bg-[url('/img/paper-texture-4.png')] bg-cover">
       <div className="flex-1 overflow-y-auto p-4">
         {state.chatHistory.length === 0 && (
           <div className="text-center py-12">
@@ -90,13 +90,13 @@ export default function ChatBox() {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={() => input.trim() && sendMessage()}
             placeholder="想去哪个城市玩？🌍"
-            className="flex-1 px-4 py-3 border rounded-full focus:outline-none focus:border-blue-500"
+            className="flex-1 px-4 py-3 border rounded-full focus:outline-none focus:border-blue-500 mt-[10px] mb-[10px]"
             disabled={state.loading}
           />
           <button
             onClick={sendMessage}
             disabled={state.loading || !input.trim()}
-            className="px-6 py-3 bg-blue-500 text-white rounded-full font-medium disabled:opacity-50"
+            className="px-6 py-3 bg-blue-500 text-white rounded-full font-medium disabled:opacity-50 mt-[10px] mb-[10px]"
           >
             {state.loading ? '...' : '发送'}
           </button>
