@@ -1,0 +1,53 @@
+.background,
+.background * {
+  box-sizing: border-box;
+}
+.background {
+  padding: 0px 19px 0px 19px;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: center;
+  justify-content: flex-end;
+  height: 288px;
+  position: relative;
+  overflow: hidden;
+}
+.background .bg {
+  flex-shrink: 0;
+  width: 431px;
+  height: 288px;
+  position: static;
+}
+.background .vector-219 {
+  width: 431px;
+  height: 249.46px;
+  position: absolute;
+  left: -20.5px;
+  top: 38.53px;
+  overflow: visible;
+}
+.background .frame-1 {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: center;
+  width: 362.34px;
+  height: 288px;
+  position: absolute;
+  left: calc(50% - 183.72px);
+  top: 0px;
+  mix-blend-mode: darken;
+  object-fit: cover;
+}
+.background .image-4 {
+  width: 197.59px;
+  height: 257.73px;
+  position: absolute;
+  left: 93.67px;
+  top: 25.77px;
+  mix-blend-mode: darken;
+  object-fit: cover;
+  aspect-ratio: 197.59/257.73;
+}

@@ -1,0 +1,422 @@
+@font-face {
+  font-family: '香蕉安宁灵感体-常规';
+  src: url('/Fonts/XiangJiaoAnNingLingGanTi-2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ebrima-Regular';
+  src: url('/Fonts/ebrima.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Ebrima-Bold';
+  src: url('/Fonts/ebrimabd.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+.main-page {
+  width: 100%;
+  max-width: 390px;
+  height: 100dvh;
+  background: #fff;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-page .overlap-wrapper,
+.main-page .overlap,
+.main-page .frame {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+  max-width: 390px;
+  margin: 0 auto !important;
+  box-sizing: border-box;
+}
+
+.main-page .overlap-group {
+  height: 665px;
+  left: 63px;
+  position: absolute;
+  top: 444px;
+  width: 390px;
+}
+
+.main-page .paper-texture {
+  height: 332px;
+  left: 0;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  width: 390px;
+}
+
+.main-page .img {
+  height: 408px;
+  left: 0;
+  object-fit: cover;
+  position: absolute;
+  top: 257px;
+  width: 390px;
+}
+
+.main-page .paper-texture-2 {
+  height: 517px;
+  left: -4010px;
+  object-fit: cover;
+  position: absolute;
+  top: -2755px;
+  width: 777px;
+}
+
+.main-page .quest {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  left: 63px;
+  padding: 0px 28px 0px 70px;
+  position: absolute;
+  top: 444px;
+  width: 390px;
+}
+
+.main-page .chat-quest {
+  height: 231.19px;
+  margin-left: -21.05px;
+  margin-right: -23.05px;
+  position: relative;
+  width: 336.1px;
+}
+
+.main-page .div {
+  height: 239px;
+  left: -4px;
+  position: relative;
+  width: 338px;
+}
+
+.main-page .union {
+  height: 144px;
+  left: 0;
+  position: absolute;
+  top: 95px;
+  width: 302px;
+}
+
+.main-page .text-wrapper {
+  color: #ffffff;
+  font-family: "Roboto", Helvetica;
+  font-size: 16px;
+  font-weight: 100;
+  left: 33px;
+  letter-spacing: 0;
+  line-height: 22px;
+  position: absolute;
+  text-align: center;
+  top: 147px;
+  white-space: nowrap;
+  width: 221px;
+}
+
+.main-page .img-2 {
+  height: 209px;
+  left: 129px;
+  mix-blend-mode: darken;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  width: 209px;
+}
+
+.main-page .img-3 {
+  height: 94px;
+  left: 144px;
+  mix-blend-mode: darken;
+  object-fit: cover;
+  position: absolute;
+  top: 83px;
+  width: 53px;
+}
+
+.main-page .background {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 288px;
+  justify-content: flex-end;
+  left: 63px;
+  padding: 0px 19px;
+  position: absolute;
+  top: 822px;
+  width: 390px;
+}
+
+.main-page .bg {
+  height: 288px;
+  position: relative;
+  width: 339px;
+}
+
+.main-page .overlap-group-2 {
+  height: 288px;
+  left: -10px;
+  position: relative;
+  width: 358px;
+}
+
+.main-page .vector {
+  height: 256px;
+  left: 0;
+  position: absolute;
+  top: 32px;
+  width: 358px;
+}
+
+.main-page .frame-2 {
+  background-image: url(/img/frame-1-4.png);
+  background-position: 50% 50%;
+  background-size: cover;
+  height: 288px;
+  left: 35px;
+  mix-blend-mode: darken;
+  position: absolute;
+  top: 0;
+  width: 285px;
+}
+
+.main-page .image {
+  height: 229px;
+  left: 90px;
+  mix-blend-mode: darken;
+  object-fit: cover;
+  position: absolute;
+  top: 40px;
+  width: 175px;
+}
+
+.main-page .theme {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  left: 63px;
+  position: absolute;
+  top: 682px;
+  width: 390px;
+}
+
+.main-page .heading-wrapper {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.main-page .heading {
+  height: 128px;
+  margin-right: -6.00px;
+  position: relative;
+  width: 396px;
+}
+
+.main-page .overlap-group-3 {
+  height: 128px;
+  position: relative;
+  width: 390px;
+}
+
+.main-page .stroke {
+  height: 69px;
+  left: 13px;
+  position: absolute;
+  top: 33px;
+  width: 353px;
+}
+
+.main-page .text-wrapper-2 {
+  -webkit-text-stroke: 0.3px #000000;
+  color: #000000;
+  font-family: "香蕉安宁灵感体-常规", Helvetica;
+  font-size: 64px;
+  font-weight: 400;
+  height: 73px;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 22px;
+  width: 390px;
+}
+
+.main-page .AI-CHATBOT {
+  color: #000000;
+  font-family: "香蕉安宁灵感体-常规", Helvetica;
+  font-size: 16px;
+  font-weight: 400;
+  left: 178px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: right;
+  top: 92px;
+}
+
+.main-page .text-wrapper-3 {
+  color: #000000;
+  font-family: "香蕉安宁灵感体-常规", Helvetica;
+  font-size: 24px;
+  font-weight: 400;
+  height: 28px;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 390px;
+}
+
+.main-page .location-emoji {
+  height: 17px;
+  left: 285px;
+  object-fit: cover;
+  position: absolute;
+  top: 109px;
+  width: 16px;
+}
+
+.main-page .button {
+  all: unset;
+  align-items: center;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 2px 150px;
+  position: relative;
+  width: 100%;
+}
+
+.main-page .btn-start {
+  all: unset;
+  box-sizing: border-box;
+  height: 36px;
+  margin-right: -2.00px;
+  position: relative;
+  transition: all 0.2s ease;
+  width: 92px;
+}
+
+.main-page .btn-start:hover {
+  transform: scale(1.1);
+}
+
+.main-page .div-wrapper {
+  border: 1px solid;
+  border-color: #000000;
+  border-radius: 21.5px;
+  height: 36px;
+  position: relative;
+  width: 90px;
+}
+
+.main-page .text-wrapper-4 {
+  color: #000000;
+  font-family: "Ebrima-Regular", Helvetica;
+  font-size: 12px;
+  font-weight: 400;
+  height: 16px;
+  left: -1px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  text-align: center;
+  top: 9px;
+  width: 90px;
+}
+
+.main-page .header {
+  align-items: flex-start;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 95px;
+  justify-content: center;
+  left: 63px;
+  padding: 10px 35px;
+  position: absolute;
+  top: 444px;
+  width: 390px;
+}
+
+.main-page .logo {
+  height: 51px;
+  position: relative;
+  width: 93px;
+}
+
+.main-page .overlap-group-4 {
+  height: 51px;
+  position: relative;
+  width: 91px;
+}
+
+.main-page .logo-text {
+  color: #000000;
+  font-family: "Ebrima-Regular", Helvetica;
+  font-size: 10px;
+  font-weight: 400;
+  left: 0;
+  letter-spacing: 0;
+  line-height: normal;
+  position: absolute;
+  top: 2px;
+  width: 83px;
+}
+
+.main-page .vector-2 {
+  height: 16px;
+  left: 58px;
+  position: absolute;
+  top: 24px;
+  width: 20px;
+}
+
+.main-page .logo-icon {
+  height: 51px;
+  left: 40px;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  width: 51px;
+}
+
+@media (max-width: 428px) {
+  .main-page .overlap-wrapper,
+  .main-page .overlap,
+  .main-page .frame {
+    width: 100vw !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    min-height: 100dvh;
+  }
+}

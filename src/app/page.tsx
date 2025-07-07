@@ -9,6 +9,7 @@ import GrassMap from './components/GrassMap';
 import TabNavigation from './components/TabNavigation';
 import LocationDetector from './components/LocationDetector';
 import RouteListPanel from './components/RouteListPanel';
+import { MainPage } from './components/MainPage/MainPage';
 
 // ==================== Context Provider ====================
 function TravelPlanProvider({ children }: { children: React.ReactNode }) {
@@ -48,11 +49,16 @@ function TravelAppContent() {
 }
 
 // ==================== 主页面 ====================
-export default function TravelApp() {
+export default function App() {
+  const [started, setStarted] = useState(false);
   return (
     <TravelPlanProvider>
       <LocationDetector>
-        <TravelAppContent />
+        {!started ? (
+          <MainPage onStart={() => setStarted(true)} />
+        ) : (
+          <TravelAppContent />
+        )}
       </LocationDetector>
     </TravelPlanProvider>
   );

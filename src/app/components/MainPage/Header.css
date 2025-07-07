@@ -1,0 +1,50 @@
+.header,
+.header * {
+  box-sizing: border-box;
+}
+.header {
+  padding: 10px 35px 10px 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: center;
+  height: 95px;
+  position: relative;
+  overflow: hidden;
+}
+.header .logo {
+  flex-shrink: 0;
+  width: 91px;
+  height: 51px;
+  position: static;
+}
+.header .logo-text {
+  color: #000000;
+  text-align: left;
+  font-family: "Ebrima-Regular", sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  position: absolute;
+  left: 35px;
+  top: 24px;
+  width: 83px;
+  height: 49px;
+}
+.header .vector-223 {
+  width: 16px;
+  height: 12px;
+  position: absolute;
+  left: 95px;
+  top: 50px;
+  overflow: visible;
+}
+.header .logo-icon {
+  width: 51px;
+  height: 51px;
+  position: absolute;
+  left: 75px;
+  top: 22px;
+  object-fit: cover;
+  aspect-ratio: 1;
+} 

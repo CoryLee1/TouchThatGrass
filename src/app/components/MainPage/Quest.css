@@ -1,0 +1,64 @@
+.quest,
+.quest * {
+  box-sizing: border-box;
+}
+.quest {
+  padding: 0px 28px 0px 70px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+.quest .chat-quest {
+  flex-shrink: 0;
+  width: 334.1px;
+  height: 231.19px;
+  position: static;
+}
+.quest .union {
+  width: 294.36px;
+  height: 135.88px;
+  position: absolute;
+  left: calc(50% - 146.05px);
+  top: 95.32px;
+  overflow: visible;
+}
+.quest .div {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-Thin", sans-serif;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 100;
+  position: absolute;
+  left: calc(50% - 116.95px);
+  top: 147.26px;
+  width: 221px;
+  height: 23.69px;
+}
+.quest .c-7-c-03-bbdacb-4-f-0-fb-132-ee-492-f-9-e-3-f-82-1 {
+  width: 156.37px;
+  height: 156.37px;
+  position: absolute;
+  left: calc(50% - 20.88px);
+  top: 140.69px;
+  transform-origin: 0 0;
+  transform: rotate(-64.126deg) scale(1, 1);
+  mix-blend-mode: darken;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.quest ._4-ef-78646-aca-4-df-3978-ebaf-697-ba-55-ac-1 {
+  width: 52.87px;
+  height: 94px;
+  position: absolute;
+  left: calc(50% - -46.88px);
+  top: 82.8px;
+  transform-origin: 0 0;
+  transform: rotate(0deg) scale(-1, 1);
+  mix-blend-mode: darken;
+  object-fit: cover;
+  aspect-ratio: 52.87/94;
+} 
