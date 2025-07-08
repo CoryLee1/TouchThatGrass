@@ -63,10 +63,6 @@ export default function GrassMap() {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
   const [reviewSource] = useState<'yelp' | 'google'>('yelp');
-  const [reviewLoading, setReviewLoading] = useState(false);
-  const [reviewData, setReviewData] = useState<ReviewData | null>(null);
-  const [reviewError, setReviewError] = useState<string | null>(null);
-  const [reviewPointId, setReviewPointId] = useState<string | null>(null);
   const [reviewUrl, setReviewUrl] = useState<string | null>(null);
   const [showReviewOverlay, setShowReviewOverlay] = useState(false);
   const [reviewOverlayPoint, setReviewOverlayPoint] = useState<GrassPoint | null>(null);
@@ -386,40 +382,12 @@ export default function GrassMap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grassPoints]);
 
-  // 拉取review
-  const fetchReview = async (point: GrassPoint, source: 'yelp' | 'google') => {
-    setReviewLoading(true);
-    setReviewError(null);
-    setReviewData(null);
-    setReviewPointId(point.id);
-    setReviewUrl(null);
-    try {
-      const res = await fetch('/api/review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: point.name, address: point.address, source }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setReviewData(data.data);
-        setReviewUrl(data.reviewUrl || null);
-      } else {
-        setReviewError(data.error || '获取评论失败');
-      }
-    } catch (err) {
-      setReviewError(String(err));
-    } finally {
-      setReviewLoading(false);
-    }
-  };
-
   // 右侧按钮点击
   const handleReviewButtonClick = (point: GrassPoint) => {
     setSelectedPointId(point.id);
     setReviewOverlayPoint(point);
     setShowReviewOverlay(true);
     // 不再请求，直接用缓存
-    setReviewData(reviewCache[point.id]?.data || null);
     setReviewUrl(reviewCache[point.id]?.url || null);
   };
 
@@ -456,18 +424,16 @@ export default function GrassMap() {
 
   // 动态刷新 popup review 内容
   useEffect(() => {
-    if (!reviewPointId) return;
-    const contentDiv = document.getElementById(`review-content-${reviewPointId}`);
+    if (!reviewOverlayPoint) return;
+    const contentDiv = document.getElementById(`review-content-${reviewOverlayPoint.id}`);
     if (contentDiv) {
-      if (reviewLoading) {
+      if (reviewLoadingMap[reviewOverlayPoint.id || '']) {
         contentDiv.innerHTML = '<div>加载中...</div>';
-      } else if (reviewError) {
-        contentDiv.innerHTML = `<div class="text-red-500">${reviewError}</div>`;
-      } else if (reviewData) {
-        contentDiv.innerHTML = renderReviewHtml(reviewData, reviewSource, reviewUrl || undefined);
+      } else if (reviewUrl) {
+        contentDiv.innerHTML = renderReviewHtml(reviewCache[reviewOverlayPoint.id]?.data || null, reviewSource, reviewUrl);
       }
     }
-  }, [reviewLoading, reviewError, reviewData, reviewSource, reviewPointId, reviewUrl]);
+  }, [reviewLoadingMap, reviewUrl, reviewOverlayPoint, reviewCache, reviewSource]);
 
   return (
     <div className="h-full bg-gray-50 flex flex-col relative">
@@ -672,7 +638,7 @@ export default function GrassMap() {
         visible={showReviewOverlay}
         onClose={() => setShowReviewOverlay(false)}
         point={reviewOverlayPoint}
-        reviewData={reviewLoadingMap[reviewOverlayPoint?.id || ''] ? null : reviewData}
+        reviewData={reviewLoadingMap[reviewOverlayPoint?.id || ''] ? null : reviewCache[reviewOverlayPoint?.id || '']?.data}
         reviewUrl={reviewUrl}
         source={reviewSource}
       />

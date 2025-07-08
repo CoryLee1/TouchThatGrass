@@ -1,3 +1,5 @@
+<!-- Copyrights belongs to Cory Yihua Li -->
+
 # TouchThatGrass（种草官）
 
 ## 项目简介

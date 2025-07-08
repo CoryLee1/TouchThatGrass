@@ -1,13 +1,37 @@
 import React from 'react';
 import type { GrassPoint } from '@/types';
+import Image from 'next/image';
 import googleLogo from '@/../public/img/google.png';
 import yelpLogo from '@/../public/img/yelp.png';
+
+interface ReviewData {
+  organic_results?: Array<{
+    reviews?: Array<ReviewItem>;
+    link?: string;
+    data_id?: string;
+    thumbnail?: string;
+    photos?: Array<{ thumbnail?: string }>;
+  }>;
+  reviews?: Array<ReviewItem>;
+  search_metadata?: {
+    google_maps_url?: string;
+  };
+}
+
+type ReviewItem = {
+  author?: { name?: string };
+  name?: string;
+  rating?: number;
+  date?: string;
+  snippet?: string;
+  text?: string;
+};
 
 interface ReviewOverlayProps {
   visible: boolean;
   onClose: () => void;
   point: GrassPoint | null;
-  reviewData: any;
+  reviewData: ReviewData | null;
   reviewUrl?: string | null;
   source: 'yelp' | 'google';
 }
@@ -17,15 +41,16 @@ const getSourceInfo = (source: 'yelp' | 'google') => {
   return { logo: googleLogo, name: 'Google Maps 评论' };
 };
 
-const getShopImage = (reviewData: any, source: 'yelp' | 'google') => {
+const getShopImage = (reviewData: ReviewData | null, source: 'yelp' | 'google') => {
+  if (!reviewData) return '';
   if (source === 'yelp') {
-    return reviewData?.organic_results?.[0]?.thumbnail || '';
+    return reviewData.organic_results?.[0]?.thumbnail || '';
   } else {
-    return reviewData?.organic_results?.[0]?.photos?.[0]?.thumbnail || '';
+    return reviewData.organic_results?.[0]?.photos?.[0]?.thumbnail || '';
   }
 };
 
-const getAIMockReviews = (point: GrassPoint) => [
+const getAIMockReviews = (point: GrassPoint): ReviewItem[] => [
   { name: 'AI点评', rating: 5, date: '2024-06-10', text: `"${point.name}"是本地热门打卡地，环境优美，体验极佳，值得一试！` },
   { name: 'AI点评', rating: 4, date: '2024-06-09', text: `许多游客对"${point.name}"赞不绝口，服务和氛围都很棒。` }
 ];
@@ -33,19 +58,19 @@ const getAIMockReviews = (point: GrassPoint) => [
 const ReviewOverlay: React.FC<ReviewOverlayProps> = ({ visible, onClose, point, reviewData, reviewUrl, source }) => {
   if (!visible || !point) return null;
   const { logo, name: sourceName } = getSourceInfo(source);
-  const reviews = reviewData?.organic_results?.[0]?.reviews || reviewData?.reviews || [];
+  const reviews: ReviewItem[] = reviewData?.organic_results?.[0]?.reviews || reviewData?.reviews || [];
   const shopImg = getShopImage(reviewData, source);
-  const displayReviews = reviews.length ? reviews : getAIMockReviews(point);
+  const displayReviews: ReviewItem[] = reviews.length ? reviews : getAIMockReviews(point);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2 md:px-0">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 relative max-h-[90vh] flex flex-col">
         <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl" onClick={onClose} aria-label="关闭">✕</button>
         <div className="flex items-center justify-center mb-2">
-          <img src={logo.src} alt={sourceName} className="w-8 h-8 mr-2" />
+          <Image src={logo} alt={sourceName} className="w-8 h-8 mr-2" width={32} height={32} />
           <span className="font-bold text-base">{sourceName}</span>
         </div>
-        {shopImg && <img src={shopImg} alt="商家图片" className="w-full h-32 object-cover rounded mb-2" />}
+        {shopImg && <Image src={shopImg} alt="商家图片" className="w-full h-32 object-cover rounded mb-2" width={320} height={128} />}
         <h2 className="text-lg font-bold mb-1 text-center">{point.name}</h2>
         <div className="text-xs text-gray-500 mb-3 text-center">{point.address}</div>
         <div className="flex-1 overflow-y-auto pr-1">

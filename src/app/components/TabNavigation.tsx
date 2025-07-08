@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
+import Image from 'next/image';
 
 interface TabNavigationProps {
   activeTab: string;
@@ -48,7 +49,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
             }`}
           >
             <div className="text-xl mb-1">
-              <img src={tab.icon} alt={tab.label} style={{ width: 32, height: 32, display: 'inline-block' }} />
+              <Image src={tab.icon} alt={tab.label} width={32} height={32} style={{ display: 'inline-block' }} />
             </div>
             <div className="text-xs font-medium">{tab.label}</div>
             {tab.badge && (

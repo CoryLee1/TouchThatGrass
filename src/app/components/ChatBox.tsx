@@ -5,6 +5,7 @@ import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
 import { XhsGrassAvatar } from './Chatbox/XhsGrassAvatar';
 import styles from './ChatBox.module.css';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
 
 export default function ChatBox() {
   const { state, addMessage, setLoading } = useTravelPlanContext();
@@ -68,7 +69,7 @@ export default function ChatBox() {
         {state.chatHistory.length === 0 && (
           <div className="text-center pt-16 pb-12">
             <div className="relative inline-block">
-              <img
+              <Image
                 src="/img/种草官grassheader.png"
                 alt="种草官grassheader"
                 className={styles.wiggle}
@@ -161,6 +162,10 @@ export default function ChatBox() {
         <div style={{position: 'absolute', right: 32, bottom: 80, zIndex: 10}}>
           <XhsGrassAvatar />
         </div>
+      </div>
+      {/* 页面水印 */}
+      <div style={{position: 'fixed', right: 12, bottom: 8, zIndex: 100, color: '#bbb', fontSize: 12, pointerEvents: 'none', userSelect: 'none'}}>
+        Copyrights belongs to Cory Yihua Li
       </div>
     </div>
   );
