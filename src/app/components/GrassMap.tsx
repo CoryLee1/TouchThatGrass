@@ -70,6 +70,8 @@ export default function GrassMap() {
   const [reviewUrl, setReviewUrl] = useState<string | null>(null);
   const [showReviewOverlay, setShowReviewOverlay] = useState(false);
   const [reviewOverlayPoint, setReviewOverlayPoint] = useState<GrassPoint | null>(null);
+  const [reviewCache, setReviewCache] = useState<Record<string, { data: ReviewData | null, url: string | null }>>({});
+  const [reviewLoadingMap, setReviewLoadingMap] = useState<Record<string, boolean>>({});
 
   // hooks 必须在顶层
   const currentPlan = state.currentPlan;
@@ -357,6 +359,33 @@ export default function GrassMap() {
   const hasCoordinates = grassPoints.some(p => p.lat && p.lng);
   const isMapSupported = MapService.isMapSupported();
 
+  // 草点准备好时批量预请求 review
+  useEffect(() => {
+    if (grassPoints.length > 0) {
+      grassPoints.forEach(point => {
+        if (point.lat && point.lng && !reviewCache[point.id]) {
+          setReviewLoadingMap(prev => ({ ...prev, [point.id]: true }));
+          fetch('/api/review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: point.name, address: point.address, source: reviewSource }),
+          })
+            .then(res => res.json())
+            .then(data => {
+              setReviewCache(prev => ({
+                ...prev,
+                [point.id]: { data: data.ok ? data.data : null, url: data.ok ? data.reviewUrl : null }
+              }));
+            })
+            .finally(() => {
+              setReviewLoadingMap(prev => ({ ...prev, [point.id]: false }));
+            });
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grassPoints]);
+
   // 拉取review
   const fetchReview = async (point: GrassPoint, source: 'yelp' | 'google') => {
     setReviewLoading(true);
@@ -389,7 +418,9 @@ export default function GrassMap() {
     setSelectedPointId(point.id);
     setReviewOverlayPoint(point);
     setShowReviewOverlay(true);
-    fetchReview(point, reviewSource);
+    // 不再请求，直接用缓存
+    setReviewData(reviewCache[point.id]?.data || null);
+    setReviewUrl(reviewCache[point.id]?.url || null);
   };
 
   // 渲染review内容
@@ -641,8 +672,9 @@ export default function GrassMap() {
         visible={showReviewOverlay}
         onClose={() => setShowReviewOverlay(false)}
         point={reviewOverlayPoint}
-        reviewData={reviewData}
+        reviewData={reviewLoadingMap[reviewOverlayPoint?.id || ''] ? null : reviewData}
         reviewUrl={reviewUrl}
+        source={reviewSource}
       />
     </div>
   );
