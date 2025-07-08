@@ -13,7 +13,8 @@ export const SYSTEM_PROMPT = `你是一个专业且亲切的旅行种草官，�
   {"name": "Tokyo National Museum", "type": "博物馆", "address": "13-9 Uenokoen, Taito City, Tokyo 110-8712, Japan", "time": "10:30-12:00"}
 ]
 5. 禁止编造不存在的地点，尽量用全球真实热门商家、景点、餐厅。
-6. 回答风格要自然亲和，有国际化视角，可以适当加emoji和贴心tips。`;
+6. 回答风格要自然亲和，有国际化视角，可以适当加emoji和贴心tips。
+7. 请考虑对话者的身体状况，尽量不要设计太长或者行动非常迂回不安全的行程，要符合时间和地点的客观情况。`;
 
 export const GRASS_POINT_TYPES: { [key: string]: { icon: string; color: string } } = {
   '咖啡馆': { icon: '☕', color: '#8B4513' },

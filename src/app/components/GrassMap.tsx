@@ -8,6 +8,7 @@ import ShareCard from './ShareCard';
 import { visualizeGrassPoints, visualizeRouteLine } from '@/app/services/visualizeRoute';
 import styles from './FinishCelebration.module.css';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
 
 // 定义 UserLocation 类型
 interface UserLocation {
@@ -22,10 +23,11 @@ interface UserLocation {
 interface WindowWithMapService extends Window {
   mapService_openNavigation?: (address: string, lat: number, lng: number) => void;
   mapService_togglePoint?: (pointId: string) => void;
+  mapService_selectPoint?: (pointId: string) => void;
 }
 
 export default function GrassMap() {
-  const { state, toggleGrassPoint, updatePlan } = useTravelPlanContext();
+  const { state, toggleGrassPoint, updatePlan, updateGrassPointGrassStatus } = useTravelPlanContext();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [isLoadingCoords, setIsLoadingCoords] = useState(false);
@@ -34,6 +36,7 @@ export default function GrassMap() {
   const [showShareCard, setShowShareCard] = useState(false);
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
 
   // hooks 必须在顶层
   const currentPlan = state.currentPlan;
@@ -41,6 +44,12 @@ export default function GrassMap() {
   const completedCount = grassPoints.filter(p => p.completed).length;
   const progress = grassPoints.length > 0 ? (completedCount / grassPoints.length) * 100 : 0;
   const isAllCompleted = completedCount === grassPoints.length && grassPoints.length > 0;
+
+  // 获取选中的草点
+  const selectedPoint = useMemo(() => 
+    selectedPointId ? grassPoints.find(p => p.id === selectedPointId) : null, 
+    [selectedPointId, grassPoints]
+  );
 
   // 事件函数 handleGetCoordinates
   const handleGetCoordinates = async () => {
@@ -60,6 +69,26 @@ export default function GrassMap() {
     } finally {
       setIsLoadingCoords(false);
     }
+  };
+
+  // 种草/拔草处理函数
+  const handlePlantGrass = () => {
+    if (selectedPointId) {
+      updateGrassPointGrassStatus(selectedPointId, 'planted');
+      setSelectedPointId(null); // 关闭底部按钮
+    }
+  };
+
+  const handleRemoveGrass = () => {
+    if (selectedPointId) {
+      updateGrassPointGrassStatus(selectedPointId, 'removed');
+      setSelectedPointId(null); // 关闭底部按钮
+    }
+  };
+
+  // 关闭底部按钮
+  const handleCloseBottomButtons = () => {
+    setSelectedPointId(null);
   };
 
   useEffect(() => {
@@ -126,28 +155,79 @@ export default function GrassMap() {
           pointsWithCoords.forEach((point, index) => {
             console.log('marker', point.name, 'comment:', point.comments);
             const typeInfo = GRASS_POINT_TYPES[point.type] || GRASS_POINT_TYPES['其他'];
+            
+            // 根据种草状态选择不同的图标
+            let markerContent = '';
+            let markerStyle = '';
+            
+            if (point.grassStatus === 'planted') {
+              // 种草状态：显示grass.png图标
+              markerContent = `<img src="/img/grass.png" alt="种草" style="width: 25px; height: 25px; object-fit: contain;" />`;
+              markerStyle = `
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, #10B981, #059669);
+                border: 3px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease;
+              `;
+            } else if (point.grassStatus === 'removed') {
+              // 拔草状态：显示拔草图标
+              markerContent = `<img src="/img/拔草badgrass.png" alt="拔草" style="width: 25px; height: 25px; object-fit: contain;" />`;
+              markerStyle = `
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, #EF4444, #DC2626);
+                border: 3px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease;
+              `;
+            } else {
+              // 默认状态：显示数字和完成状态
+              markerContent = point.completed
+                ? '✓'
+                : `${index + 1}${point.status === 'liked' ? ' <span style="margin-left:2px;font-size:16px;">🌱</span>' : ''}`;
+              markerStyle = `
+                width: 35px;
+                height: 35px;
+                background: ${point.completed ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #3B82F6, #1D4ED8)'};
+                border: 3px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                font-weight: bold;
+                color: white;
+                cursor: pointer;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease;
+              `;
+            }
+            
             const el = document.createElement('div');
-            el.style.cssText = `
-              width: 35px;
-              height: 35px;
-              background: ${point.completed ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #3B82F6, #1D4ED8)'};
-              border: 3px solid white;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 14px;
-              font-weight: bold;
-              color: white;
-              cursor: pointer;
-              box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-              transition: transform 0.2s ease;
-            `;
-            el.innerHTML = point.completed
-              ? '✓'
-              : `${index + 1}${point.status === 'liked' ? ' <span style="margin-left:2px;font-size:16px;">🌱</span>' : ''}`;
+            el.style.cssText = markerStyle;
+            el.innerHTML = markerContent;
+            
+            // 添加点击事件
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              setSelectedPointId(point.id);
+            });
+            
             el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
             el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)'; });
+            
             const popup = new Popup({ offset: 25, className: 'grass-point-popup' }).setHTML(`
               <div class="p-3 min-w-[200px]">
                 <div class="flex items-center gap-2 mb-2">
@@ -175,6 +255,7 @@ export default function GrassMap() {
               .setLngLat([point.lng!, point.lat!])
               .setPopup(popup)
               .addTo(map!);
+            
             markersRef.current.push(marker);
           });
           if (pointsWithCoords.length > 1) {
@@ -210,7 +291,31 @@ export default function GrassMap() {
     (window as unknown as WindowWithMapService).mapService_togglePoint = (pointId: string) => {
       toggleGrassPoint(pointId);
     };
+    (window as unknown as WindowWithMapService).mapService_selectPoint = (pointId: string) => {
+      setSelectedPointId(pointId);
+    };
   }, [toggleGrassPoint]);
+
+  // 添加地图容器点击事件，关闭底部按钮
+  useEffect(() => {
+    const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
+      // 如果点击的不是marker，则关闭底部按钮
+      const target = e.originalEvent.target as HTMLElement;
+      if (!target.closest('.mapboxgl-marker')) {
+        setSelectedPointId(null);
+      }
+    };
+
+    if (mapRef.current) {
+      mapRef.current.on('click', handleMapClick);
+    }
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.off('click', handleMapClick);
+      }
+    };
+  }, []);
 
   const hasCoordinates = grassPoints.some(p => p.lat && p.lng);
   const isMapSupported = MapService.isMapSupported();
@@ -353,6 +458,50 @@ export default function GrassMap() {
           <div ref={mapContainer} className="w-full h-full" />
         )}
       </div>
+
+      {/* 底部种草/拔草按钮 */}
+      {selectedPoint && (
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="font-medium text-gray-900">{selectedPoint.name}</h3>
+              <p className="text-sm text-gray-600">{selectedPoint.address}</p>
+            </div>
+            <button
+              onClick={handleCloseBottomButtons}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handlePlantGrass}
+              className="flex-1 flex items-center justify-center p-1 border-1 border-green-500 bg-transparent hover:bg-green-50 transition-colors transform hover:scale-105 active:scale-95 rounded-lg"
+            >
+              <Image 
+                src="/img/种草goodgrass.png" 
+                alt="种草" 
+                width={72} 
+                height={72} 
+                className="object-contain"
+              />
+            </button>
+            <button
+              onClick={handleRemoveGrass}
+              className="flex-1 flex items-center justify-center p-1 border-1 border-red-500 bg-transparent hover:bg-red-50 transition-colors transform hover:scale-105 active:scale-95 rounded-lg"
+            >
+              <Image 
+                src="/img/拔草badgrass.png" 
+                alt="拔草" 
+                width={72} 
+                height={72} 
+                className="object-contain"
+              />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

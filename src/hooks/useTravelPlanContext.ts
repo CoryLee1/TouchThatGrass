@@ -12,6 +12,7 @@ export const TravelPlanContext = createContext<{
   updateGrassPointStatus: (pointId: string, status: 'liked' | 'disliked' | 'none') => void;
   updateGrassPointPhoto: (pointId: string, photoUrl: string) => void;
   updateGrassPointComment: (pointId: string, comment: { text: string; user?: string; time?: string }) => void;
+  updateGrassPointGrassStatus: (pointId: string, grassStatus: 'none' | 'planted' | 'removed') => void;
 } | null>(null);
 
 export function useTravelPlanContext() {

@@ -13,6 +13,7 @@ export interface GrassPoint {
     status?: 'none' | 'liked' | 'disliked';
     photoUrl?: string;
     comments?: { text: string; user?: string; time?: string }[];
+    grassStatus?: 'none' | 'planted' | 'removed';
   }
   
   export interface TravelPlan {

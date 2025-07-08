@@ -153,6 +153,20 @@ export const useTravelPlan = () => {
     });
   }, []);
 
+  // 新增：种草/拔草状态更新
+  const updateGrassPointGrassStatus = useCallback((pointId: string, grassStatus: 'none' | 'planted' | 'removed') => {
+    setState(prev => {
+      if (!prev.currentPlan) return prev;
+      const updatedPoints = prev.currentPlan.grassPoints.map(point =>
+        point.id === pointId ? { ...point, grassStatus } : point
+      );
+      return {
+        ...prev,
+        currentPlan: { ...prev.currentPlan, grassPoints: updatedPoints }
+      };
+    });
+  }, []);
+
   return {
     state,
     updatePlan,
@@ -163,6 +177,7 @@ export const useTravelPlan = () => {
     updateGrassPointTime,
     updateGrassPointStatus,
     updateGrassPointPhoto,
-    updateGrassPointComment
+    updateGrassPointComment,
+    updateGrassPointGrassStatus
   };
 };

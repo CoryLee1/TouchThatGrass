@@ -17,22 +17,6 @@ function extractGrassPoints(content: string) {
   }
 }
 
-function parseSearchResults(searchRes: unknown) {
-  // 解析 web_search_preview 返回的 message.content[0].annotations
-  const output = (searchRes as unknown as { output?: { choices?: Array<{ message?: unknown }> } }).output;
-  const message = output?.choices?.[0]?.message || (searchRes as Record<string, unknown>)?.message;
-  if (!message) return [];
-  const contentArr = (message as { content?: unknown }).content as Array<Record<string, unknown>> | undefined;
-  const annotations = contentArr && contentArr[0] ? contentArr[0].annotations || [] : [];
-  // 只保留 url_citation 类型
-  return (annotations as Array<Record<string, unknown>>)
-    .filter((a) => a.type === 'url_citation')
-    .map((a) => ({
-      url: a.url as string,
-      title: (a.title as string) || (a.url as string),
-    }));
-}
-
 export async function POST(req: Request) {
   const startTime = Date.now();
   try {
