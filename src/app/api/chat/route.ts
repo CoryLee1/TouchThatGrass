@@ -82,20 +82,28 @@ ${userInput}
     const contentStr = content ?? '';
     const grassPoints = extractGrassPoints(contentStr);
 
-    // 3. 对每个草点名调用 web_search_preview
+    // 3. 对每个草点名调用 web_search_preview（只查前1~2个草点）
     const spotPosts = await Promise.all(
-      grassPoints.map(async (point) => {
-        const searchRes = await openai.responses.create({
-          model: "gpt-4.1",
-          tools: [{ type: "web_search_preview" }],
-          input: `site:xiaohongshu.com ${point.name} 攻略 OR 游记 OR 笔记`
-        });
-        const posts = parseSearchResults(searchRes);
-        console.log(`[WebSearch] ${point.name} posts:`, posts);
-        return {
-          spot: point.name,
-          posts
-        };
+      grassPoints.slice(0, 2).map(async (point) => {
+        try {
+          const searchRes = await openai.responses.create({
+            model: "gpt-4.1",
+            tools: [{ type: "web_search_preview" }],
+            input: `site:xiaohongshu.com ${point.name} 攻略 OR 游记 OR 笔记`
+          });
+          const posts = parseSearchResults(searchRes);
+          console.log(`[WebSearch] ${point.name} posts:`, posts);
+          return {
+            spot: point.name,
+            posts
+          };
+        } catch (err) {
+          console.error(`[WebSearch ERROR] ${point.name}:`, err);
+          return {
+            spot: point.name,
+            posts: []
+          };
+        }
       })
     );
 
