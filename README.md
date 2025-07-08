@@ -75,3 +75,35 @@ Copyrights belongs to Cory Yihua Li
 ---
 
 如需更多技术细节、产品方案或数据分析脚本，欢迎 Issue 或 PR！
+
+## 📄 License
+
+This project is licensed under a **Creative Concept Protection License** by **Yihua Li (Cory)**.
+
+### 🎯 About This Project
+
+This project started from my original idea and creative vision. While some implementation used AI assistance, the core concept, design decisions, and creative direction are entirely my own work.
+
+### 🔒 Usage Rights
+
+- ✅ **Personal Use**: Feel free to study, learn, and experiment
+- ✅ **Educational Use**: Perfect for learning and research
+- ✅ **Modifications**: You can modify for personal projects
+- ✅ **Sharing**: Share with proper attribution
+- ❌ **Commercial Use**: Prohibited without permission
+- ❌ **Selling**: Cannot sell or profit from this work
+
+### 💡 Development Approach
+
+- **Original Concept**: Creative vision and user experience design by Yihua Li (Cory)
+- **AI Assistance**: Some code generation under human creative direction  
+- **Manual Refinement**: Human optimization and improvements
+- **Documentation**: All explanations and docs are human-written
+
+### 📧 Contact
+
+For commercial licensing inquiries: cory958014884@gmail.com
+
+---
+
+**© 2025 Yihua Li (Cory). Original concepts and creative direction protected.**
