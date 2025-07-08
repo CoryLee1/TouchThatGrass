@@ -34,8 +34,12 @@ function parseSearchResults(searchRes: unknown) {
 }
 
 export async function POST(req: Request) {
+  const startTime = Date.now();
   try {
+    console.log('[API] /api/chat 请求收到');
     const { messages, temperature = 0.7, model = 'gpt-4o' } = await req.json();
+    console.log('[API] 用户消息:', messages);
+
     // 从用户消息中提取最后一条输入
     const userInput = (messages as { role: string; content: string }[] | undefined)?.filter((m: { role: string; content: string }) => m.role === 'user').slice(-1)[0]?.content ?? '';
 
@@ -60,59 +64,64 @@ export async function POST(req: Request) {
 ${userInput}
 `;
 
-    // 合成 messages（让 system prompt 排首位）
     const allMessages = [
       { role: 'system', content: systemPrompt },
       ...(messages || []),
     ];
 
-    if (!Array.isArray(messages)) {
-      return NextResponse.json({ error: 'messages 必须为数组' }, { status: 400 });
-    }
-
-    // 1. 生成路线回复
+    console.log('[API] 开始生成AI主回复');
+    const completionStart = Date.now();
     const completion = await openai.chat.completions.create({
       model,
       messages: allMessages,
       temperature,
     });
-    const content = completion.choices[0].message.content;
+    const completionEnd = Date.now();
+    console.log(`[API] AI主回复生成完成，耗时${completionEnd - completionStart}ms`);
 
-    // 2. 提取草点
+    const content = completion.choices[0].message.content;
     const contentStr = content ?? '';
     const grassPoints = extractGrassPoints(contentStr);
+    console.log('[API] 提取到草点:', grassPoints);
 
-    // 3. 对每个草点名调用 web_search_preview（只查前1~2个草点）
-    const spotPosts = await Promise.all(
-      grassPoints.slice(0, 2).map(async (point) => {
-        try {
-          const searchRes = await openai.responses.create({
-            model: "gpt-4.1",
-            tools: [{ type: "web_search_preview" }],
-            input: `site:xiaohongshu.com ${point.name} 攻略 OR 游记 OR 笔记`
-          });
-          const posts = parseSearchResults(searchRes);
-          console.log(`[WebSearch] ${point.name} posts:`, posts);
-          return {
-            spot: point.name,
-            posts
-          };
-        } catch (err) {
-          console.error(`[WebSearch ERROR] ${point.name}:`, err);
-          return {
-            spot: point.name,
-            posts: []
-          };
-        }
-      })
-    );
+    // 异步websearch：主回复先返回，websearch结果可由前端再查
+    // const spotPosts = await Promise.all(
+    //   grassPoints.slice(0, 2).map(async (point, idx) => {
+    //     try {
+    //       const t0 = Date.now();
+    //       console.log(`[WebSearch] 开始查${point.name}`);
+    //       const searchRes = await openai.responses.create({
+    //         model: "gpt-4.1",
+    //         tools: [{ type: "web_search_preview" }],
+    //         input: `site:xiaohongshu.com ${point.name} 攻略 OR 游记 OR 笔记`
+    //       });
+    //       const posts = parseSearchResults(searchRes);
+    //       const t1 = Date.now();
+    //       console.log(`[WebSearch] ${point.name} 查完，耗时${t1 - t0}ms，结果:`, posts);
+    //       return {
+    //         spot: point.name,
+    //         posts
+    //       };
+    //     } catch (err) {
+    //       console.error(`[WebSearch ERROR] ${point.name}:`, err);
+    //       return {
+    //         spot: point.name,
+    //         posts: []
+    //       };
+    //     }
+    //   })
+    // );
+
+    // console.log('[API] spotPosts:', spotPosts);
+    console.log(`[API] 总耗时: ${Date.now() - startTime}ms`);
 
     return NextResponse.json({
       ok: true,
       result: completion.choices[0].message,
-      spotPosts
+      // spotPosts
     });
   } catch (err: unknown) {
+    console.error('[API] /api/chat 异常:', err);
     return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 }
