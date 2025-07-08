@@ -1,109 +1,99 @@
-# TouchThatGrass
+# TouchThatGrass（种草官）
 
-> AI 驱动的智能旅行种草 & 路线推荐 H5 应用
+## 项目简介
 
-本项目基于 Next.js 15、TypeScript、Mapbox GL JS、Tailwind CSS，结合 AI 聊天与地理服务，帮助用户智能生成一日游路线、可视化地图打卡、路线动画、智能导航与分享。
-
----
-
-## ✨ 主要功能
-
-- AI 聊天生成个性化一日游路线
-- 草点（打卡点）智能地理编码（支持 Mapbox/高德自动切换）
-- 地图可视化（Mapbox GL JS，支持动画蚂蚁线、草点高亮）
-- 列表/地图视图切换
-- 智能导航（自动适配国内外地图服务）
-- 旅程完成后生成精美分享卡片
-- 支持多端部署（Vercel 推荐）
+**TouchThatGrass** 是一个为年轻旅行者设计的"AI旅行种草官"Web应用。用户可以通过聊天与AI助手互动，自动生成个性化一日游路线，并在地图上打卡、种草/拔草、管理行程。项目融合了AI智能推荐、交互式地图、路线管理和社交分享等功能，致力于提升旅行灵感和体验。
 
 ---
 
-## 🛠 技术栈
+## 主要功能
 
-- [Next.js 15 (App Router)](https://nextjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/)
+- **AI聊天助手**：通过自然语言对话，自动生成符合用户兴趣的旅行路线。
+- **Markdown行程渲染**：AI回复支持Markdown格式，行程结构清晰美观。
+- **草点打卡地图**：基于Mapbox，展示所有推荐草点，支持点击打卡、种草/拔草。
+- **种草/拔草交互**：点击地图草点，底部弹出大图标按钮，支持一键种草/拔草，状态同步到全局。
+- **路线列表管理**：可拖拽排序、设置时间、拍照、评论每个草点。
+- **智能导航**：popup内一键跳转高德/Google地图导航，自动适配中外用户。
+- **旅程完成庆祝&分享**：全部打卡后有动画庆祝，并可生成分享卡片。
+- **自定义UI**：支持自定义字体、纸张纹理背景、专属头像等。
+
+---
+
+## 技术栈
+
+- **前端**：React 18 + Next.js 15（App Router）
+- **地图**：Mapbox GL JS
+- **AI**：OpenAI GPT-4o API
+- **UI**：Tailwind CSS + CSS Modules
+- **图片资源**：Next.js `Image` 组件和自定义静态资源
+- **拖拽**：@dnd-kit/core
+- **类型**：TypeScript 全面类型安全
+
+---
+
+## 快速开始
+
+1. **安装依赖**
+   ```bash
+   npm install
+   ```
+
+2. **配置环境变量**
+   在根目录新建 `.env.local`，添加：
+   ```env
+   OPENAI_API_KEY=你的OpenAI密钥
+   NEXT_PUBLIC_MAPBOX_TOKEN=你的Mapbox Token
+   ```
+
+3. **开发模式启动**
+   ```bash
+   npm run dev
+   ```
+   访问 http://localhost:3000
+
+4. **生产构建**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+---
+
+## 目录结构
+
+- `src/app/components/`  —— 主要UI组件（ChatBox, GrassMap, RouteListPanel等）
+- `src/app/api/`         —— 后端API（AI聊天、地理编码）
+- `src/hooks/`           —— 全局状态与业务逻辑
+- `public/img/`          —— 静态图片资源（草点、logo、背景等）
+- `src/types/`           —— TypeScript类型定义
+
+---
+
+## 核心亮点
+
+- **AI+地图深度融合**：AI自动生成行程，草点一键同步到地图，支持打卡、种草、拔草。
+- **极致交互体验**：底部大图标按钮、动画庆祝、纸张纹理、专属字体，细节拉满。
+- **智能导航适配**：国内外用户自动跳转高德/Google地图。
+- **代码结构清晰**：组件化、类型安全、易于二次开发。
+
+---
+
+## 自定义与扩展
+
+- **更换地图服务**：可在 `MapService` 中扩展高德、百度等地图API。
+- **自定义UI**：替换 `public/img/` 下的图片、字体、背景即可。
+- **AI模型切换**：在 `api/chat/route.ts` 里可自定义OpenAI模型参数。
+- **多语言支持**：可扩展i18n，支持更多语言和本地化。
+
+---
+
+## 致谢
+
+- [OpenAI](https://openai.com/)
+- [Mapbox](https://www.mapbox.com/)
+- [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [OpenAI/AI API](https://platform.openai.com/)
-- [高德地图 API](https://lbs.amap.com/api/webservice/summary/)
-- [Vercel 部署](https://vercel.com/)
 
 ---
 
-## 📁 目录结构
-
-```
-src/
-  app/
-    components/      # 主要 UI 组件（地图、聊天、导航、分享卡等）
-    services/        # 地图/地理/分享等服务逻辑
-    api/             # 后端 API 路由（地理编码、AI 聊天等）
-  constants/         # 常量与提示语
-  hooks/             # React hooks（如 useTravelPlan）
-  types/             # 全局类型定义
-public/              # 静态资源
-```
-
----
-
-## ⚙️ 环境变量
-
-请在根目录下创建 `.env.local`，并配置以下变量：
-
-```env
-NEXT_PUBLIC_MAPBOX_TOKEN=你的MapboxToken
-NEXT_PUBLIC_AMAP_KEY=你的高德Key（可选，支持中国地址更精准）
-OPENAI_API_KEY=你的OpenAI Key
-```
-
-**注意：** 部署到 Vercel 时，需在 Vercel 后台手动配置所有环境变量！
-
----
-
-## 🚀 本地开发与部署
-
-```bash
-# 安装依赖
-npm install
-
-# 启动开发环境
-npm run dev
-
-# 生产构建
-npm run build
-npm start
-```
-
-访问 [http://localhost:3000](http://localhost:3000)
-
----
-
-## 📦 主要依赖
-
-- next
-- react
-- mapbox-gl
-- tailwindcss
-- openai
-- @types/geojson
-- eslint, typescript 等
-
----
-
-## 🤝 贡献指南
-
-1. Fork 本仓库
-2. 新建分支 (`git checkout -b feature/xxx`)
-3. 提交更改 (`git commit -am 'feat: xxx'`)
-4. Push 分支 (`git push origin feature/xxx`)
-5. 提交 Pull Request
-
----
-
-## 📄 License
-
-MIT
-
----
-
-> 如有问题或建议，欢迎提 Issue 或 PR！
+如有问题或建议，欢迎提 issue 或联系作者！
