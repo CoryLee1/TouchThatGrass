@@ -1,0 +1,11 @@
+.xhs-grass-avatar,
+.xhs-grass-avatar * {
+  box-sizing: border-box;
+}
+.xhs-grass-avatar {
+  width: 146px;
+  height: 146px;
+  position: relative;
+  object-fit: cover;
+  aspect-ratio: 1;
+} 

@@ -1,0 +1,12 @@
+.wiggle {
+  animation: wiggle 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes wiggle {
+  0% { transform: scale(var(--header-scale, 1)) rotate(-4deg); }
+  20% { transform: scale(var(--header-scale, 1)) rotate(4deg); }
+  40% { transform: scale(var(--header-scale, 1)) rotate(-3deg); }
+  60% { transform: scale(var(--header-scale, 1)) rotate(3deg); }
+  80% { transform: scale(var(--header-scale, 1)) rotate(-2deg); }
+  100% { transform: scale(var(--header-scale, 1)) rotate(2deg); }
+} 

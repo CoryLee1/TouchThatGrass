@@ -2,15 +2,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
+import { Logoxhs } from './Chatbox/Logoxhs';
+import { XhsGrassAvatar } from './Chatbox/XhsGrassAvatar';
+import styles from './ChatBox.module.css';
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatBox() {
   const { state, addMessage, setLoading } = useTravelPlanContext();
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
+  const [headerScale, setHeaderScale] = useState(0.7);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.chatHistory]);
+
+  useEffect(() => {
+    if (state.chatHistory.length === 0) {
+      setTimeout(() => setHeaderScale(1), 100);
+    }
+  }, [state.chatHistory.length]);
 
   const sendMessage = async () => {
     if (!input.trim() || state.loading) return;
@@ -43,14 +54,34 @@ export default function ChatBox() {
     }
   };
 
+  // 过滤AI回复中的json代码块和独立json对象
+  function filterJsonContent(text: string) {
+    // 移除 ```json ... ``` 代码块
+    let filtered = text.replace(/```json[\s\S]*?```/gi, '');
+    // 移除独立的 JSON 对象（如 { ... })，仅当整段为json时移除
+    filtered = filtered.replace(/^\s*\{[\s\S]*?\}\s*$/gm, '');
+    return filtered.trim();
+  }
+
   return (
-    <div className="flex flex-col h-full bg-white bg-[url('/img/paper-texture-4.png')] bg-cover">
+    <div className="relative flex flex-col h-full bg-white bg-[url('/img/paper-texture-4.png')] bg-cover">
       <div className="flex-1 overflow-y-auto p-4">
         {state.chatHistory.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🌍</div>
-            <div className="text-xl font-bold mb-2">全球种草官</div>
-            <div className="text-gray-600">告诉我你想去的城市 ✨</div>
+          <div className="text-center pt-16 pb-12">
+            <div className="relative inline-block">
+              <img
+                src="/img/种草官grassheader.png"
+                alt="种草官grassheader"
+                className={styles.wiggle}
+                style={{
+                  display: 'inline-block',
+                  transform: `scale(${headerScale})`,
+                  transition: 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)'
+                }}
+                width={368}
+                height={138}
+              />
+            </div>
           </div>
         )}
         
@@ -64,7 +95,9 @@ export default function ChatBox() {
               <div className="text-sm font-medium mb-1">
                 {msg.role === 'user' ? '我' : '种草官'}
               </div>
-              <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
+              <div className="prose prose-sm max-w-none text-left">
+                <ReactMarkdown>{filterJsonContent(msg.content)}</ReactMarkdown>
+              </div>
             </div>
           </div>
         ))}
@@ -100,6 +133,9 @@ export default function ChatBox() {
           >
             {state.loading ? '...' : '发送'}
           </button>
+        </div>
+        <div style={{position: 'absolute', right: 32, bottom: 80, zIndex: 10}}>
+          <XhsGrassAvatar />
         </div>
       </div>
     </div>

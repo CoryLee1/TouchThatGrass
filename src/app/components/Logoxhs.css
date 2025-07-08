@@ -1,0 +1,11 @@
+.logoxhs,
+.logoxhs * {
+  box-sizing: border-box;
+}
+.logoxhs {
+  width: 83.91px;
+  height: 40px;
+  position: relative;
+  object-fit: cover;
+  aspect-ratio: 83.91/40;
+} 

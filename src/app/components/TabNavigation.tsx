@@ -14,13 +14,13 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
   const tabs = [
     { 
       id: 'chat', 
-      icon: '💬', 
+      icon: '/img/ChatIcon.png', 
       label: 'AI种草',
       badge: state.chatHistory.length > 0 ? state.chatHistory.length : null
     },
     { 
       id: 'map', 
-      icon: '🗺️', 
+      icon: '/img/Map.png', 
       label: '打卡地图',
       badge: state.currentPlan ? 
         `${state.currentPlan.grassPoints.filter(p => p.completed).length}/${state.currentPlan.grassPoints.length}` 
@@ -28,7 +28,7 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
     },
     {
       id: 'routeList',
-      icon: '📋',
+      icon: '/img/List.png',
       label: '路线列表',
       badge: null
     }
@@ -47,7 +47,9 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
                 : 'text-gray-600'
             }`}
           >
-            <div className="text-xl mb-1">{tab.icon}</div>
+            <div className="text-xl mb-1">
+              <img src={tab.icon} alt={tab.label} style={{ width: 32, height: 32, display: 'inline-block' }} />
+            </div>
             <div className="text-xs font-medium">{tab.label}</div>
             {tab.badge && (
               <div className="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1 min-w-[1.25rem] h-5 flex items-center justify-center">
