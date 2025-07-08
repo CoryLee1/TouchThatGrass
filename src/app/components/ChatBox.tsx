@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
-import { Logoxhs } from './Chatbox/Logoxhs';
 import { XhsGrassAvatar } from './Chatbox/XhsGrassAvatar';
 import styles from './ChatBox.module.css';
 import ReactMarkdown from 'react-markdown';
