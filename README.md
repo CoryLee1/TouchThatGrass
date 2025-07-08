@@ -1,6 +1,8 @@
 <!-- Copyrights belongs to Cory Yihua Li -->
 
 # Touch That Grass
+<img width="1920" alt="Slide 16_9 - 14 (1)" src="https://github.com/user-attachments/assets/86d42393-3192-49d0-a3d5-adbbd9b3b342" />
+
 
 > 🌱 AI 驱动的旅行地图 · 行程规划 · 打卡种草 · 智能助手
 
