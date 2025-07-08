@@ -62,11 +62,10 @@ export default function GrassMap() {
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
-  const [reviewSource] = useState<'yelp' | 'google'>('yelp');
   const [reviewUrl, setReviewUrl] = useState<string | null>(null);
   const [showReviewOverlay, setShowReviewOverlay] = useState(false);
   const [reviewOverlayPoint, setReviewOverlayPoint] = useState<GrassPoint | null>(null);
-  const [reviewCache, setReviewCache] = useState<Record<string, { data: ReviewData | null, url: string | null }>>({});
+  const [reviewCache, setReviewCache] = useState<Record<string, { data: ReviewData | null, url: string | null, source: string }>>({});
   const [reviewLoadingMap, setReviewLoadingMap] = useState<Record<string, boolean>>({});
 
   // hooks 必须在顶层
@@ -361,19 +360,40 @@ export default function GrassMap() {
       grassPoints.forEach(point => {
         if (point.lat && point.lng && !reviewCache[point.id]) {
           setReviewLoadingMap(prev => ({ ...prev, [point.id]: true }));
+          // 先请求 Google
           fetch('/api/review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: point.name, address: point.address, source: reviewSource }),
+            body: JSON.stringify({ name: point.name, address: point.address, source: 'google' }),
           })
             .then(res => res.json())
             .then(data => {
-              setReviewCache(prev => ({
-                ...prev,
-                [point.id]: { data: data.ok ? data.data : null, url: data.ok ? data.reviewUrl : null }
-              }));
+              if (data.ok && data.data && (data.data.reviews?.length || (data.data.organic_results?.[0]?.reviews?.length))) {
+                setReviewCache(prev => ({
+                  ...prev,
+                  [point.id]: { data: data.data, url: data.reviewUrl, source: 'google' }
+                }));
+                setReviewLoadingMap(prev => ({ ...prev, [point.id]: false }));
+              } else {
+                // Google 没有评论，自动请求 Yelp
+                fetch('/api/review', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: point.name, address: point.address, source: 'yelp' }),
+                })
+                  .then(res2 => res2.json())
+                  .then(data2 => {
+                    setReviewCache(prev => ({
+                      ...prev,
+                      [point.id]: { data: data2.ok ? data2.data : null, url: data2.ok ? data2.reviewUrl : null, source: 'yelp' }
+                    }));
+                  })
+                  .finally(() => {
+                    setReviewLoadingMap(prev => ({ ...prev, [point.id]: false }));
+                  });
+              }
             })
-            .finally(() => {
+            .catch(() => {
               setReviewLoadingMap(prev => ({ ...prev, [point.id]: false }));
             });
         }
@@ -387,9 +407,11 @@ export default function GrassMap() {
     setSelectedPointId(point.id);
     setReviewOverlayPoint(point);
     setShowReviewOverlay(true);
-    // 不再请求，直接用缓存
     setReviewUrl(reviewCache[point.id]?.url || null);
   };
+
+  // 处理 source 类型
+  const getSourceType = (src: string | undefined): 'yelp' | 'google' => src === 'yelp' ? 'yelp' : 'google';
 
   // 渲染review内容
   function renderReviewHtml(data: ReviewData | null, source: 'yelp' | 'google', reviewUrl?: string) {
@@ -430,10 +452,14 @@ export default function GrassMap() {
       if (reviewLoadingMap[reviewOverlayPoint.id || '']) {
         contentDiv.innerHTML = '<div>加载中...</div>';
       } else if (reviewUrl) {
-        contentDiv.innerHTML = renderReviewHtml(reviewCache[reviewOverlayPoint.id]?.data || null, reviewSource, reviewUrl);
+        contentDiv.innerHTML = renderReviewHtml(
+          reviewCache[reviewOverlayPoint.id]?.data || null,
+          getSourceType(reviewCache[reviewOverlayPoint.id]?.source),
+          reviewUrl
+        );
       }
     }
-  }, [reviewLoadingMap, reviewUrl, reviewOverlayPoint, reviewCache, reviewSource]);
+  }, [reviewLoadingMap, reviewUrl, reviewOverlayPoint, reviewCache]);
 
   return (
     <div className="h-full bg-gray-50 flex flex-col relative">
@@ -640,7 +666,7 @@ export default function GrassMap() {
         point={reviewOverlayPoint}
         reviewData={reviewLoadingMap[reviewOverlayPoint?.id || ''] ? null : reviewCache[reviewOverlayPoint?.id || '']?.data}
         reviewUrl={reviewUrl}
-        source={reviewSource}
+        source={getSourceType(reviewCache[reviewOverlayPoint?.id || '']?.source)}
       />
     </div>
   );
