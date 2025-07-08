@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTravelPlanContext } from '@/hooks/useTravelPlanContext';
-import { XhsGrassAvatar } from './Chatbox/XhsGrassAvatar';
+import { WeatherAvatarButton } from './WeatherAvatarButton';
 import styles from './ChatBox.module.css';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
@@ -160,7 +160,7 @@ export default function ChatBox() {
           </button>
         </div>
         <div style={{position: 'absolute', right: 32, bottom: 80, zIndex: 10}}>
-          <XhsGrassAvatar />
+          <WeatherAvatarButton />
         </div>
       </div>
       {/* 页面水印 */}

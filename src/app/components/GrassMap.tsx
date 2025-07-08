@@ -147,7 +147,6 @@ export default function GrassMap() {
 
   useEffect(() => {
     let map: import('mapbox-gl').Map | null = null;
-
     if (!mapContainer.current || mapRef.current) return;
     const pointsWithCoords = grassPoints.filter(p => p.lat && p.lng);
     if (pointsWithCoords.length === 0) return;
@@ -173,13 +172,10 @@ export default function GrassMap() {
       });
       map.on('load', () => {
         try {
-          // 草点和路径可视化解耦
           visualizeGrassPoints(map!, pointsWithCoords);
           if (pointsWithCoords.length > 1) {
-            // 推荐路线为蓝色
             visualizeRouteLine(map!, pointsWithCoords, { color: '#3B82F6', width: 10, animated: true });
           }
-          // 清理旧 marker
           markersRef.current.forEach(m => m.remove());
           markersRef.current = [];
           pointsWithCoords.forEach((point, index) => {
@@ -300,7 +296,6 @@ export default function GrassMap() {
             map!.fitBounds(bounds, { padding: 50 });
           }
         } catch (err) {
-          // 捕获渲染异常，避免地图挂掉
           console.error('地图渲染异常:', err);
         }
       });
@@ -312,7 +307,6 @@ export default function GrassMap() {
         mapRef.current.remove();
         mapRef.current = null;
       }
-      // 清理 marker
       markersRef.current.forEach(m => m.remove());
       markersRef.current = [];
     };
