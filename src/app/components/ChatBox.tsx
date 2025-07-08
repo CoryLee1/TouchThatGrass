@@ -45,7 +45,7 @@ export default function ChatBox() {
 
       const data = await res.json();
       const aiReply = data?.result?.content || '抱歉，AI没有回复。';
-      addMessage({ role: 'assistant', content: aiReply });
+      addMessage({ role: 'assistant', content: aiReply, spotPosts: data.spotPosts });
     } catch {
       addMessage({ role: 'assistant', content: '😥 网络错误，请重试' });
     } finally {
@@ -94,9 +94,34 @@ export default function ChatBox() {
               <div className="text-sm font-medium mb-1">
                 {msg.role === 'user' ? '我' : '种草官'}
               </div>
-              <div className="prose prose-sm max-w-none text-left">
+              <div className="whitespace-pre-wrap text-sm">
                 <ReactMarkdown>{filterJsonContent(msg.content)}</ReactMarkdown>
               </div>
+              {msg.role === 'assistant' && msg.spotPosts && msg.spotPosts.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {msg.spotPosts.map((spot: { spot: string; posts: Array<{ url: string; title: string }> }) => (
+                    <div key={spot.spot} className="bg-gray-50 rounded-lg p-2 border">
+                      <div className="font-bold mb-1 text-green-700">{spot.spot} · 小红书推荐</div>
+                      {spot.posts && spot.posts.length > 0 ? (
+                        spot.posts.map((post: { url: string; title: string }, idx: number) => (
+                          <a
+                            key={post.url + idx}
+                            href={post.url}
+                            target="_blank"
+                            rel="noopener"
+                            className="block text-blue-500 underline text-sm truncate"
+                            title={post.title}
+                          >
+                            {post.title}
+                          </a>
+                        ))
+                      ) : (
+                        <div className="text-gray-400 text-xs">暂无相关笔记</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}

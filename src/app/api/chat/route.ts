@@ -7,6 +7,32 @@ const openai = new OpenAI({
 
 export const runtime = 'edge';
 
+function extractGrassPoints(content: string) {
+  try {
+    const jsonMatch = content.match(/\[\s*{[\s\S]*?}\s*\]/);
+    if (!jsonMatch) return [];
+    return JSON.parse(jsonMatch[0]) as Array<{ name: string }>;
+  } catch {
+    return [];
+  }
+}
+
+function parseSearchResults(searchRes: unknown) {
+  // 解析 web_search_preview 返回的 message.content[0].annotations
+  const output = (searchRes as unknown as { output?: { choices?: Array<{ message?: unknown }> } }).output;
+  const message = output?.choices?.[0]?.message || (searchRes as Record<string, unknown>)?.message;
+  if (!message) return [];
+  const contentArr = (message as { content?: unknown }).content as Array<Record<string, unknown>> | undefined;
+  const annotations = contentArr && contentArr[0] ? contentArr[0].annotations || [] : [];
+  // 只保留 url_citation 类型
+  return (annotations as Array<Record<string, unknown>>)
+    .filter((a) => a.type === 'url_citation')
+    .map((a) => ({
+      url: a.url as string,
+      title: (a.title as string) || (a.url as string),
+    }));
+}
+
 export async function POST(req: Request) {
   try {
     const { messages, temperature = 0.7, model = 'gpt-4o' } = await req.json();
@@ -44,15 +70,39 @@ ${userInput}
       return NextResponse.json({ error: 'messages 必须为数组' }, { status: 400 });
     }
 
+    // 1. 生成路线回复
     const completion = await openai.chat.completions.create({
       model,
       messages: allMessages,
       temperature,
     });
+    const content = completion.choices[0].message.content;
+
+    // 2. 提取草点
+    const contentStr = content ?? '';
+    const grassPoints = extractGrassPoints(contentStr);
+
+    // 3. 对每个草点名调用 web_search_preview
+    const spotPosts = await Promise.all(
+      grassPoints.map(async (point) => {
+        const searchRes = await openai.responses.create({
+          model: "gpt-4.1",
+          tools: [{ type: "web_search_preview" }],
+          input: `site:xiaohongshu.com ${point.name} 攻略 OR 游记 OR 笔记`
+        });
+        const posts = parseSearchResults(searchRes);
+        console.log(`[WebSearch] ${point.name} posts:`, posts);
+        return {
+          spot: point.name,
+          posts
+        };
+      })
+    );
 
     return NextResponse.json({
       ok: true,
       result: completion.choices[0].message,
+      spotPosts
     });
   } catch (err: unknown) {
     return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 });

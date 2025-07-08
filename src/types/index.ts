@@ -27,6 +27,10 @@ export interface GrassPoint {
     role: 'user' | 'assistant';
     content: string;
     timestamp: number;
+    spotPosts?: Array<{
+      spot: string;
+      posts: Array<{ url: string; title: string }>;
+    }>;
   }
   
   export interface AppState {

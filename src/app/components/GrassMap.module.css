@@ -1,0 +1,10 @@
+@font-face {
+  font-family: 'XiangJiaoAnNingLingGanTi';
+  src: url('/Fonts/XiangJiaoAnNingLingGanTi-2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.bananaFont {
+  font-family: 'XiangJiaoAnNingLingGanTi', sans-serif;
+  letter-spacing: 0.5px;
+} 

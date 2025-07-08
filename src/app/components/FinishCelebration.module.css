@@ -1,0 +1,13 @@
+@font-face {
+  font-family: 'XiangJiaoAnNingLingGanTi';
+  src: url('/Fonts/XiangJiaoAnNingLingGanTi-2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.finishCelebrationBg {
+  background-image: url('/img/paper-texture-4.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  font-family: 'XiangJiaoAnNingLingGanTi', sans-serif;
+} 

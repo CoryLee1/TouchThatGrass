@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Image from 'next/image';
+import styles from './GrassMap.module.css';
 
 interface RouteListPanelProps {
   grassPoints: GrassPoint[];
@@ -241,9 +242,9 @@ const RouteListPanel: React.FC<RouteListPanelProps> = ({
   }
 
   return (
-    <div className={`bg-white shadow-lg transition-all duration-300 h-full overflow-y-auto`}> 
+    <div className={`bg-[url('/img/paper-texture-4.png')] bg-cover shadow-lg transition-all duration-300 h-full overflow-y-auto`}> 
       <div className="flex items-center justify-between px-4 py-2 border-b">
-        <div className="font-bold text-lg">路线列表</div>
+        <h2 className={styles.bananaFont + ' text-2xl'}>路线列表</h2>
       </div>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={grassPoints.map(i => i.id)} strategy={verticalListSortingStrategy}>

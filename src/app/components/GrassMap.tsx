@@ -6,6 +6,8 @@ import { GRASS_POINT_TYPES } from '@/constants/prompts';
 import { MapService } from '@/app/services/mapService';
 import ShareCard from './ShareCard';
 import { visualizeGrassPoints, visualizeRouteLine } from '@/app/services/visualizeRoute';
+import styles from './FinishCelebration.module.css';
+import ReactMarkdown from 'react-markdown';
 
 // 定义 UserLocation 类型
 interface UserLocation {
@@ -217,7 +219,7 @@ export default function GrassMap() {
     <div className="h-full bg-gray-50 flex flex-col relative">
       {/* 完成庆祝动画 */}
       {showCompletionCelebration && (
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center z-40">
+        <div className={`absolute inset-0 flex items-center justify-center z-40 ${styles.finishCelebrationBg}`}>
           <div className="text-center text-white">
             <div className="text-6xl mb-4 animate-bounce">🎉</div>
             <div className="text-2xl font-bold mb-2">恭喜完成所有打卡！</div>
@@ -241,7 +243,16 @@ export default function GrassMap() {
       <div className="bg-white p-4 border-b">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="font-bold text-lg">{state.currentPlan?.title ?? ''}</h2>
+            <h2 className={styles.bananaFont + ' text-lg'}>
+              <ReactMarkdown
+                components={{
+                  h1: 'span', h2: 'span', h3: 'span', h4: 'span', h5: 'span', h6: 'span',
+                  strong: (props) => <span style={{fontWeight: 700}} {...props} />,
+                }}
+              >
+                {state.currentPlan?.title ?? ''}
+              </ReactMarkdown>
+            </h2>
             <div className="text-sm text-gray-600 flex items-center gap-2">
               {state.currentPlan?.city ?? ''}
               {userLocation && (
