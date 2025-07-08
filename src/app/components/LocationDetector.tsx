@@ -79,10 +79,10 @@ export default function LocationDetector({ children }: LocationDetectorProps) {
   // 如果正在检测且是首次加载，显示加载界面
   if (isDetecting && !location) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500">
-        <div className="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
+      <div className="h-screen flex items-center justify-center bg-[url('/img/paper-texture-4.png')] bg-cover">
+        <div className="bg-white/80 rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
           <div className="text-6xl mb-4">🌍</div>
-          <div className="text-2xl font-bold mb-2 text-gray-800">正在定位中...</div>
+          <div className="text-2xl font-bold mb-2 text-gray-800 font-xjann">正在定位中...</div>
           <div className="text-sm text-gray-600 mb-6">
             {permissionStatus === 'prompt' && '请允许获取位置信息以提供更好的服务'}
             {permissionStatus === 'denied' && '位置权限被拒绝，将使用IP定位'}
@@ -138,10 +138,10 @@ export default function LocationDetector({ children }: LocationDetectorProps) {
   // 如果检测失败，显示错误和重试选项
   if (error && !location) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-red-400 to-pink-500">
-        <div className="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
+      <div className="h-screen flex items-center justify-center bg-[url('/img/paper-texture-4.png')] bg-cover">
+        <div className="bg-white/80 rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
           <div className="text-6xl mb-4">😅</div>
-          <div className="text-xl font-bold mb-2 text-gray-800">位置检测遇到问题</div>
+          <div className="text-xl font-bold mb-2 text-gray-800 font-xjann">位置检测遇到问题</div>
           <div className="text-sm text-gray-600 mb-6">{error}</div>
           
           <div className="space-y-3">
