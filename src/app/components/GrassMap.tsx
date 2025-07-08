@@ -223,6 +223,10 @@ export default function GrassMap() {
             el.addEventListener('click', (e) => {
               e.stopPropagation();
               setSelectedPointId(point.id);
+              const popupInstance = marker.getPopup();
+              if (popupInstance && map) {
+                popupInstance.addTo(map);
+              }
             });
             
             el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.1)'; });
