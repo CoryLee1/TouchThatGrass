@@ -9,6 +9,8 @@ import { visualizeGrassPoints, visualizeRouteLine } from '@/app/services/visuali
 import styles from './FinishCelebration.module.css';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
+import type { GrassPoint } from '@/types';
+import ReviewOverlay from './ReviewOverlay';
 
 // 定义 UserLocation 类型
 interface UserLocation {
@@ -26,6 +28,29 @@ interface WindowWithMapService extends Window {
   mapService_selectPoint?: (pointId: string) => void;
 }
 
+// 定义 ReviewData 类型
+interface ReviewData {
+  organic_results?: Array<{
+    reviews?: Array<{
+      author?: { name?: string };
+      rating?: number;
+      date?: string;
+      snippet?: string;
+    }>;
+    link?: string;
+    data_id?: string;
+  }>;
+  reviews?: Array<{
+    author?: { name?: string };
+    rating?: number;
+    date?: string;
+    text?: string;
+  }>;
+  search_metadata?: {
+    google_maps_url?: string;
+  };
+}
+
 export default function GrassMap() {
   const { state, toggleGrassPoint, updatePlan, updateGrassPointGrassStatus } = useTravelPlanContext();
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -37,6 +62,14 @@ export default function GrassMap() {
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
+  const [reviewSource] = useState<'yelp' | 'google'>('yelp');
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewData, setReviewData] = useState<ReviewData | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewPointId, setReviewPointId] = useState<string | null>(null);
+  const [reviewUrl, setReviewUrl] = useState<string | null>(null);
+  const [showReviewOverlay, setShowReviewOverlay] = useState(false);
+  const [reviewOverlayPoint, setReviewOverlayPoint] = useState<GrassPoint | null>(null);
 
   // hooks 必须在顶层
   const currentPlan = state.currentPlan;
@@ -324,6 +357,87 @@ export default function GrassMap() {
   const hasCoordinates = grassPoints.some(p => p.lat && p.lng);
   const isMapSupported = MapService.isMapSupported();
 
+  // 拉取review
+  const fetchReview = async (point: GrassPoint, source: 'yelp' | 'google') => {
+    setReviewLoading(true);
+    setReviewError(null);
+    setReviewData(null);
+    setReviewPointId(point.id);
+    setReviewUrl(null);
+    try {
+      const res = await fetch('/api/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: point.name, address: point.address, source }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setReviewData(data.data);
+        setReviewUrl(data.reviewUrl || null);
+      } else {
+        setReviewError(data.error || '获取评论失败');
+      }
+    } catch (err) {
+      setReviewError(String(err));
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // 右侧按钮点击
+  const handleReviewButtonClick = (point: GrassPoint) => {
+    setSelectedPointId(point.id);
+    setReviewOverlayPoint(point);
+    setShowReviewOverlay(true);
+    fetchReview(point, reviewSource);
+  };
+
+  // 渲染review内容
+  function renderReviewHtml(data: ReviewData | null, source: 'yelp' | 'google', reviewUrl?: string) {
+    let html = '';
+    if (!data) return html;
+    if (source === 'yelp') {
+      const reviews = data.organic_results?.[0]?.reviews || [];
+      if (!reviews.length) html += '<div>暂无评论</div>';
+      else html += reviews.map((r) => `
+        <div class="mb-2 border-b pb-2">
+          <div class="font-bold">${r.author?.name || ''} <span class="text-yellow-500">${'★'.repeat(r.rating || 0)}</span></div>
+          <div class="text-xs text-gray-500">${r.date || ''}</div>
+          <div>${r.snippet || ''}</div>
+        </div>
+      `).join('');
+    } else {
+      const reviews = data.reviews || [];
+      if (!reviews.length) html += '<div>暂无评论</div>';
+      else html += reviews.map((r) => `
+        <div class="mb-2 border-b pb-2">
+          <div class="font-bold">${r.author?.name || ''} <span class="text-yellow-500">${'★'.repeat(r.rating || 0)}</span></div>
+          <div class="text-xs text-gray-500">${r.date || ''}</div>
+          <div>${r.text || ''}</div>
+        </div>
+      `).join('');
+    }
+    if (reviewUrl) {
+      html += `<div class="mt-2 text-center"><a href="${reviewUrl}" target="_blank" rel="noopener noreferrer" class="inline-block px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">查看原评论</a></div>`;
+    }
+    return html;
+  }
+
+  // 动态刷新 popup review 内容
+  useEffect(() => {
+    if (!reviewPointId) return;
+    const contentDiv = document.getElementById(`review-content-${reviewPointId}`);
+    if (contentDiv) {
+      if (reviewLoading) {
+        contentDiv.innerHTML = '<div>加载中...</div>';
+      } else if (reviewError) {
+        contentDiv.innerHTML = `<div class="text-red-500">${reviewError}</div>`;
+      } else if (reviewData) {
+        contentDiv.innerHTML = renderReviewHtml(reviewData, reviewSource, reviewUrl || undefined);
+      }
+    }
+  }, [reviewLoading, reviewError, reviewData, reviewSource, reviewPointId, reviewUrl]);
+
   return (
     <div className="h-full bg-gray-50 flex flex-col relative">
       {/* 完成庆祝动画 */}
@@ -347,6 +461,22 @@ export default function GrassMap() {
         isVisible={showShareCard} 
         onClose={() => setShowShareCard(false)} 
       />
+
+      {/* 右侧 review 按钮组 */}
+      <div className="absolute right-2 top-1/4 z-50 flex flex-col gap-3 md:gap-2">
+        {grassPoints.map((point, idx) => (
+          <button
+            key={point.id}
+            className={`w-14 h-14 md:w-10 md:h-10 rounded-full bg-white shadow border flex flex-col items-center justify-center hover:bg-blue-100 font-bold text-base md:text-lg ${selectedPointId === point.id ? 'border-blue-500' : 'border-gray-300'}`}
+            onClick={() => handleReviewButtonClick(point)}
+            title={`查看${point.name}的评论`}
+            style={{marginBottom: 8, touchAction: 'manipulation'}}
+          >
+            <span className="text-xl md:text-base">📝</span>
+            <span className="text-xs">{idx + 1}</span>
+          </button>
+        ))}
+      </div>
 
       {/* 头部信息 */}
       <div className="bg-white p-4 border-b">
@@ -506,6 +636,14 @@ export default function GrassMap() {
           </div>
         </div>
       )}
+
+      <ReviewOverlay
+        visible={showReviewOverlay}
+        onClose={() => setShowReviewOverlay(false)}
+        point={reviewOverlayPoint}
+        reviewData={reviewData}
+        reviewUrl={reviewUrl}
+      />
     </div>
   );
 }
