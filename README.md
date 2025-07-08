@@ -7,6 +7,7 @@
 > 🌱 AI 驱动的旅行地图 · 行程规划 · 打卡种草 · 智能助手
 
 [项目在线体验地址 → https://touch-that-grass.vercel.app/](https://touch-that-grass.vercel.app/)
+Live Demo: https://www.touchthatgrassycory.org/ 
 
 ---
 
