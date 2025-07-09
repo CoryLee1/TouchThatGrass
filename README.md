@@ -32,6 +32,9 @@ Live Demo: https://www.touchthatgrassycory.org/
    自动收集用户点击、行为、地理位置等数据，便于产品优化与数据驱动决策。
 
 ---
+<img width="1920" alt="Slide 16_9 - 15" src="https://github.com/user-attachments/assets/7178b3d2-2613-47fc-b794-4b39fe96d95d" />
+<img width="1920" alt="Slide 16_9 - 16" src="https://github.com/user-attachments/assets/969c9d60-90fb-422f-a447-002331a0cf77" />
+<img width="1920" alt="Slide 16_9 - 17" src="https://github.com/user-attachments/assets/eebe657c-8f51-4a14-b170-96b49913832f" />
 
 ## 实现功能点
 
